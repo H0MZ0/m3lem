@@ -1,5 +1,7 @@
 # Auth and permissions
 
+**Password recovery:** `/[lang]/account/forgot` calls Supabase Auth and gives a non-enumerating response. The recovery email opens `/auth/callback?flow=recovery&lang=fr` (or `ar`) with a PKCE code. Open it in the browser that requested it. The callback exchanges the code for a session and redirects to the localized reset form. The password update uses the user's own verified session, not an admin credential; after success the user signs in again. Invalid callbacks go to the request form. Allow both callback URLs in Supabase Auth and configure SMTP before a public launch. The local Mailpit inbox is at `http://127.0.0.1:54324`.
+
 Accounts use email and password. The public Moroccan number is editorial data, never a login identifier. Supabase Auth provisions identities; a first valid save provisions a unique owner profile in the same transaction. Visitors browse, report and use a review invitation without signing up.
 
 `src/lib/server.ts` creates a per-request cookie client with `@supabase/ssr`. `src/proxy.ts` calls `auth.getClaims()` for session cookies, forwards refreshed cookies to both request and response and applies cache headers. Protected pages/actions verify claims, then staff membership where required. The server never authorizes from an unverified `getSession()` payload. Signup configures a PKCE confirmation redirect; `/auth/callback` exchanges the code and sets session cookies. Use the browser that initiated signup for the PKCE verifier. Sign-out clears the session.

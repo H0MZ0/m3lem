@@ -22,6 +22,15 @@ export default async function Account({
           {tr(l, "الرابط سالا. عاود دخل.", "Lien expiré. Reconnectez-vous.")}
         </p>
       )}
+      {(await searchParams).changed && (
+        <p role="status" className="notice">
+          {tr(
+            l,
+            "تبدلات كلمة السر. دخل بالكلمة الجديدة.",
+            "Mot de passe modifié. Connectez-vous avec le nouveau mot de passe.",
+          )}
+        </p>
+      )}
       <ActionForm action={authenticate.bind(null, l)} className="panel stack">
         <label>
           {tr(l, "الإيميل", "Adresse e-mail")}
@@ -57,6 +66,11 @@ export default async function Account({
           </button>
         </div>
       </ActionForm>
+      <p>
+        <a href={`/${l}/account/forgot`}>
+          {tr(l, "نسيت كلمة السر؟", "Mot de passe oublié ?")}
+        </a>
+      </p>
     </section>
   );
 }

@@ -51,11 +51,18 @@ export default async function Profile({ params, searchParams }: Props) {
         </a>
       </p>
       <div className="profile panel">
-        <span className="avatar">
-          <Icon slug={p.trades[0]} />
-        </span>
+        {!p.gallery.length && (
+          <span className="avatar">
+            <Icon slug={p.trades[0]} />
+          </span>
+        )}
         <small>{p.trades.map((s) => nameOf(items, s, l)).join(" · ")}</small>
         <h1>{p.name}</h1>
+        {p.gallery[0] && (
+          <div className="portfolio-cover">
+            <Photo id={p.gallery[0]} n={1} name={p.name} l={l} />
+          </div>
+        )}
         <p>
           <Coverage p={p} l={l} items={items} />
         </p>
@@ -80,12 +87,12 @@ export default async function Profile({ params, searchParams }: Props) {
           )}
         </small>
       </div>
-      {!!p.gallery.length && (
+      {p.gallery.length > 1 && (
         <section>
           <h2>{t("من الخدمة ديالي", "Réalisations")}</h2>
           <div className="gallery">
-            {p.gallery.map((id, i) => (
-              <Photo key={id} {...{ id, l, n: i + 1, name: p.name }} />
+            {p.gallery.slice(1).map((id, i) => (
+              <Photo key={id} {...{ id, l, n: i + 2, name: p.name }} />
             ))}
           </div>
         </section>

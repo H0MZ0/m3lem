@@ -8,6 +8,8 @@ On a live profile, confirm availability for today or remove it. This operation d
 
 ### Gallery
 
+The workspace has three destinations: **Aujourd’hui** (publication state, availability, link to the public fiche), **Ma fiche** (services and contact details) and **Mes photos** (import, order and submit photos). New accounts open on the profile form. A failed profile save preserves the entered values and identifies invalid phone/fee/contact fields. Both profile and photo edits use the same optimistic revision check. Saving one preserves the other’s last saved content; switching sections is navigation, not autosave.
+
 Upload one JPEG, PNG or WebP at a time, at most 5 MiB and 24 megapixels, static images only. The server checks both declared type and decoded format. Sharp applies orientation, strips metadata and writes WebP renditions bounded to 1280 and 480 pixels. The bucket is private. Max 24 library assets and eight selected photos per revision. Choose photos, give them distinct ranks from 1 to 8 and save or submit. Approval covers the selected images in their reviewed order.
 
 A failed upload leaves existing media and the approved version intact. Retry with a smaller valid file. Deselect a photo and obtain approval to remove it from a live gallery; use **Supprimer des photos inutilisées** for assets no longer referenced by any revision. The DB checks ownership and references even for a direct request. A key is generated per upload rather than replacing old bytes.

@@ -121,7 +121,7 @@ test("region first on mobile, city-only links, French switch and keyboard naviga
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.keyboard.press("Tab");
   await expect(page.getByText("دوز للمحتوى")).toBeFocused();
-  await page.locator("[name=q]").fill("الماء كيسرب");
+  await page.locator("[name=q]").fill("الما كيتسرب");
   const region = page.locator("[name=region]"),
     city = page.locator("[name=city]");
   await expect(region.locator("option")).toHaveCount(13);
@@ -135,10 +135,17 @@ test("region first on mobile, city-only links, French switch and keyboard naviga
   await expect(city.locator('option[value="tanger"]')).toHaveCount(0);
   await city.selectOption("casablanca");
   await page.locator("[name=today]").check();
-  await page.getByRole("button", { name: /قلّب/ }).click();
-  await expect(page).toHaveURL(/city\/casablanca\/plomberie\?today=1$/);
-  await expect(page.locator("article")).toHaveCount(1);
   await page.getByRole("link", { name: "Français" }).click();
+  await expect(page.locator("[name=q]")).toHaveValue("الما كيتسرب");
+  await expect(page.locator("[name=today]")).toBeChecked();
+  await expect(city).toHaveValue("casablanca");
+  await page
+    .locator(".shortcuts a")
+    .filter({ hasText: "Plomberie" })
+    .first()
+    .click();
+  await expect(page.locator("article")).toHaveCount(1);
+  await expect(page.locator("article .contact").first()).toBeInViewport();
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
   await expect(page).toHaveURL(/fr\/city\/casablanca\/plomberie\?today=1$/);
   await page.getByRole("link", { name: /Atelier Nila/ }).click();
@@ -150,6 +157,7 @@ test("region first on mobile, city-only links, French switch and keyboard naviga
   ).toHaveCount(0);
   await page.getByRole("link", { name: "Retour aux résultats" }).click();
   await expect(page).toHaveURL(/plomberie\?today=1$/);
+  await page.getByText("Modifier la recherche", { exact: true }).click();
   await expect(region).toHaveValue("region-06");
   await expect(city).toHaveValue("casablanca");
   await page.locator("[name=q]").fill("peintre");
@@ -222,9 +230,22 @@ test("desktop: signup, private upload, moderation, report, review and suspension
     await expect(page.locator("select[name=city]")).toHaveValue("tanger");
     await page.getByLabel("Téléphone public").fill("0600000000");
     await page.getByLabel(/J’accepte la publication/).check();
+    await page.getByLabel("Téléphone public").fill("111");
     await page
       .getByRole("button", { name: "Enregistrer le brouillon" })
       .click();
+    await expect(page.getByText(/numéro marocain valide/)).toBeVisible();
+    await expect(page.getByLabel("Nom public")).toHaveValue(name);
+    await expect(page.getByLabel("Services proposés")).toHaveValue(
+      "Réparation de fuites dans le quartier.",
+    );
+    await expect(page.getByLabel("Téléphone public")).toBeFocused();
+    await page.getByLabel("Téléphone public").fill("0600000000");
+    await page
+      .getByRole("button", { name: "Enregistrer le brouillon" })
+      .click();
+    await expect(page.locator("aside.notice")).toContainText("Brouillon");
+    await page.getByRole("link", { name: "Mes photos" }).click();
     await expect(page.locator("[name=image]")).toBeVisible();
     const w = (await owner.rpc("my_workspace")).data;
     expect(w.revision.trades.sort()).toEqual(["menuiserie", "plomberie"]);
@@ -291,6 +312,10 @@ test("desktop: signup, private upload, moderation, report, review and suspension
       .getByRole("button", { name: "Confirmer pour aujourd’hui" })
       .click();
     await expect(page.getByText(/Dernière confirmation/)).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Voir ma fiche publique" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Ma fiche", exact: true }).click();
     await page.getByLabel("Nom public").fill(name + " modifié");
     await page.getByRole("button", { name: "Envoyer en révision" }).click();
     await expect(page.locator("aside.notice")).toContainText("En révision");
@@ -309,6 +334,9 @@ test("desktop: signup, private upload, moderation, report, review and suspension
       .locator("details.panel")
       .filter({ has: admin.locator("summary", { hasText: name }) });
     await panel.locator("summary").click();
+    await expect(panel.locator(".revision-diff")).toContainText(
+      name + " modifié",
+    );
     await panel.getByRole("button", { name: "Approuver et publier" }).click();
     await expect(panel.locator("summary")).toContainText("Publié");
     await admin
@@ -317,20 +345,22 @@ test("desktop: signup, private upload, moderation, report, review and suspension
       .getByRole("button", { name: "Clore le signalement" })
       .click();
     await expect(admin.getByText("Test de contact " + suffix)).toHaveCount(0);
+    if (!(await panel.locator("[name=evidence]").isVisible()))
+      await panel.locator("summary").click();
     await panel
       .getByLabel("Preuve documentée de fin d’intervention")
       .fill("Client appelé après le travail de test.");
     await panel.getByRole("button", { name: "Émettre un lien d’avis" }).click();
     const link = await panel.locator(".invite").getAttribute("href");
     await publicPage.goto(link!);
+    await expect(publicPage.getByRole("heading", { level: 1 })).toContainText(
+      name + " modifié",
+    );
     await publicPage.getByLabel("Note sur 5").selectOption("5");
     await publicPage.getByLabel("Votre avis").fill("Travail précis " + suffix);
     await publicPage.getByRole("button", { name: "Envoyer l’avis" }).click();
     await expect(publicPage.getByText(/avis est en modération/)).toBeVisible();
     await publicPage.reload();
-    await publicPage.getByLabel("Note sur 5").selectOption("4");
-    await publicPage.getByLabel("Votre avis").fill("Avis en double");
-    await publicPage.getByRole("button", { name: "Envoyer l’avis" }).click();
     await expect(publicPage.getByText(/déjà utilisé/)).toBeVisible();
     await admin.reload();
     await admin

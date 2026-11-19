@@ -4,6 +4,7 @@ import {
   contacts,
   normalizePhone,
   resolveTrade,
+  suggestTrades,
   type Item,
 } from "../src/lib/model";
 test("Arabic variants, French accents and Latin aliases", () => {
@@ -24,6 +25,38 @@ test("Arabic variants, French accents and Latin aliases", () => {
     "Trisian",
   ])
     assert.equal(resolveTrade([item], s), item.slug);
+});
+test("spoken Darija water leaks resolve; partial trade names are suggestions, not automatic substitutions", () => {
+  const items: Item[] = [
+    {
+      kind: "trade",
+      slug: "plomberie",
+      ar: "البلومبية",
+      fr: "Plomberie",
+      aliases: ["الماء كيسرب", "plombier"],
+      active: true,
+      parent: null,
+    },
+    {
+      kind: "trade",
+      slug: "menuiserie",
+      ar: "النجارة",
+      fr: "Menuiserie bois",
+      aliases: ["نجار"],
+      active: true,
+      parent: null,
+    },
+  ];
+  for (const q of ["الما كيسرب", "الماء كيتسرب", "الما كيتسرب"])
+    assert.equal(resolveTrade(items, q), "plomberie");
+  for (const [q, s] of [
+    ["plomb", "plomberie"],
+    ["نجار خشب", "menuiserie"],
+  ]) {
+    assert.equal(resolveTrade(items, q), undefined);
+    assert.equal(suggestTrades(items, q)[0].slug, s);
+  }
+  assert.deepEqual(suggestTrades(items, "xxxzz"), []);
 });
 test("Moroccan contact channels, localized message and inert demos", () => {
   assert.equal(normalizePhone("00212 6 12 34 56 78"), "+212612345678");

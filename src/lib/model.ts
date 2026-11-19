@@ -48,6 +48,7 @@ export type Queue = {
     state: State;
     feedback: string;
     live: string | null;
+    previous: Revision | null;
     verified_at: string | null;
   }[];
   reports: { id: string; profile: string; reason: string }[];
@@ -67,14 +68,53 @@ export function normalize(s: string) {
     .trim()
     .replace(/\s+/g, " ");
 }
+function searchKey(s: string) {
+  return normalize(s)
+    .replace(/[’']/g, " ")
+    .split(/\s+/)
+    .map(
+      (word) =>
+        ({
+          الما: "الماء",
+          لما: "الماء",
+          كيتسرب: "كيسرب",
+          تايسرب: "كيسرب",
+          كيتسرّب: "كيسرب",
+        })[word] ?? word,
+    )
+    .join(" ");
+}
+const terms = (i: Item) => [i.slug, i.ar, i.fr, ...i.aliases].map(searchKey);
 export function resolveTrade(items: Item[], q: string) {
-  return items.find(
-    (i) =>
-      i.kind === "trade" &&
-      [i.slug, i.ar, i.fr, ...i.aliases].some(
-        (a) => normalize(a) === normalize(q),
-      ),
-  )?.slug;
+  const key = searchKey(q);
+  return items.find((i) => i.kind === "trade" && terms(i).includes(key))?.slug;
+}
+/** Rank near matches as choices; never substitute a different trade silently. */
+export function suggestTrades(items: Item[], q: string): Item[] {
+  const key = searchKey(q),
+    words = key.split(" ").filter((w) => w.length >= 3);
+  if (!words.length) return [];
+  return items
+    .filter((i) => i.kind === "trade")
+    .map((item) => {
+      const names = terms(item),
+        tokens = names.flatMap((v) => v.split(/[\s-]+/));
+      const score = words.reduce(
+        (n, w) =>
+          n +
+          (tokens.includes(w)
+            ? 4
+            : tokens.some((t) => t.startsWith(w))
+              ? 2
+              : 0),
+        0,
+      );
+      return { item, score };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score || a.item.slug.localeCompare(b.item.slug))
+    .slice(0, 4)
+    .map((r) => r.item);
 }
 export function matchesItem(i: Item, query: string) {
   const q = normalize(query);

@@ -16,38 +16,33 @@ export async function save(
     fee = val(f, "fee");
   if (!phone)
     return {
+      field: "phone",
       message: tr(
         l,
         "دخل نمرة مغربية صحيحة.",
         "Entrez un numéro marocain valide.",
       ),
     };
-  if (fee && !/^\d{1,6}$/.test(fee)) return fail(l);
+  if (fee && (!/^\d{1,6}$/.test(fee) || Number(fee) > 100000))
+    return {
+      field: "fee",
+      message: tr(
+        l,
+        "دخل ثمن بين 0 و100000 درهم.",
+        "Saisissez un montant entre 0 et 100 000 MAD.",
+      ),
+    };
   if (!list(f, "trades").length)
     return {
       message: tr(l, "اختار شي حرفة.", "Sélectionnez au moins un métier."),
     };
   if (val(f, "mode") === "submit" && !f.has("consent"))
     return {
+      field: "consent",
       message: tr(
         l,
         "الموافقة على نشر النمرة ضرورية للمراجعة.",
         "Le consentement à publier le numéro est requis pour soumettre la fiche.",
-      ),
-    };
-  const gallery = list(f, "media")
-    .map((id) => [id, Number(val(f, "order:" + id))] as const)
-    .sort((a, b) => a[1] - b[1]);
-  if (
-    gallery.length > 8 ||
-    new Set(gallery.map((x) => x[1])).size !== gallery.length ||
-    gallery.some((x) => !Number.isInteger(x[1]) || x[1] < 1 || x[1] > 8)
-  )
-    return {
-      message: tr(
-        l,
-        "عطي لكل صورة مختارة ترتيب مختلف من 1 حتى 8.",
-        "Attribuez à chaque photo sélectionnée un rang distinct de 1 à 8.",
       ),
     };
   try {
@@ -60,12 +55,14 @@ export async function save(
       )
     )
       return {
+        field: "city",
         message: tr(
           l,
           "اختار مدينة من الجهة اللي حددتي.",
           "Choisissez une ville de la région sélectionnée.",
         ),
       };
+    const w = await rpc<Workspace | null>("my_workspace");
     await rpc("save_profile", {
       body: {
         base: val(f, "base"),
@@ -77,7 +74,52 @@ export async function save(
         fee: fee ? Number(fee) : null,
         consent: f.has("consent"),
         whatsapp: f.has("whatsapp"),
-        gallery: gallery.map((x) => x[0]),
+        gallery: w?.revision.gallery ?? [],
+      },
+      submit: val(f, "mode") === "submit",
+    });
+  } catch {
+    return fail(l);
+  }
+  revalidatePath(`/${l}/workspace`);
+  return done(l);
+}
+export async function saveGallery(
+  lang: string,
+  _: Outcome,
+  f: FormData,
+): Promise<Outcome> {
+  const l = locale(lang);
+  await access(l);
+  const gallery = list(f, "media")
+    .map((id) => ({ id, rank: Number(val(f, "order:" + id)) }))
+    .sort((a, b) => a.rank - b.rank);
+  if (
+    gallery.length > 8 ||
+    new Set(gallery.map((x) => x.rank)).size !== gallery.length ||
+    gallery.some((x) => !Number.isInteger(x.rank) || x.rank < 1 || x.rank > 8)
+  )
+    return {
+      message: tr(
+        l,
+        "عطي لكل صورة ترتيب مختلف من 1 حتى 8.",
+        "Attribuez un rang distinct de 1 à 8 à chaque photo sélectionnée.",
+      ),
+    };
+  try {
+    const w = await rpc<Workspace | null>("my_workspace");
+    if (
+      !w ||
+      w.state === "suspended" ||
+      w.revision.id !== val(f, "base") ||
+      gallery.some((x) => !w.assets.includes(x.id))
+    )
+      return fail(l);
+    await rpc("save_profile", {
+      body: {
+        ...w.revision,
+        base: w.revision.id,
+        gallery: gallery.map((x) => x.id),
       },
       submit: val(f, "mode") === "submit",
     });

@@ -1,5 +1,7 @@
 # Deploy and operate
 
+For the audit workflow update, apply `202611190007_marketplace_workflows.sql` before switching the web build. Configure and verify recovery SMTP and allow the exact `/auth/callback?flow=recovery&lang=ar` and `lang=fr` URLs on the new web origin. The local mailbox test covers the email and password change, not real-world email delivery. Start with opted-in artisans in a specific city/trade pair; verify portfolios, fee disclosures and enabled contact channels before promoting the directory. Use the staff 30-day empty-search report to choose subsequent recruitment areas.
+
 Production deployment and account provisioning are separate operator actions. This repository contains a local release, not a configured production service.
 
 1. Use independent Supabase projects for development, staging and production. Take a database backup and retain a matching Storage backup. Apply migrations in order with a reviewed `supabase db push` against the intended linked project. Do not run local resets or demo seeding on a hosted project.

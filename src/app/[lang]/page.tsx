@@ -2,6 +2,7 @@ import { catalog, locale } from "@/lib/server";
 import { tr } from "@/lib/model";
 import { seo } from "@/lib/seo";
 import { HomeSearch } from "@/features/discovery/home-search";
+import { readDraft } from "@/features/discovery/draft";
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const l = locale((await params).lang);
   return seo(
@@ -15,9 +16,13 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
     ),
   );
 }
-export default async function Home({ params }: PageProps<"/[lang]">) {
+export default async function Home({
+  params,
+  searchParams,
+}: PageProps<"/[lang]">) {
   const l = locale((await params).lang),
-    items = await catalog();
+    items = await catalog(),
+    paramsQuery = await searchParams;
   return (
     <>
       <section className="hero">
@@ -39,7 +44,19 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
       {items.some((i) => i.kind === "city" && i.parent) ? (
-        <HomeSearch l={l} items={items} initial="" />
+        <HomeSearch
+          l={l}
+          items={items}
+          browse={paramsQuery.browse === "1"}
+          initial={
+            readDraft(items, paramsQuery) ?? {
+              city: "",
+              region: "",
+              q: "",
+              today: false,
+            }
+          }
+        />
       ) : (
         <p>
           {tr(

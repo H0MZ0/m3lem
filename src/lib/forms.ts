@@ -1,6 +1,11 @@
 import type { Locale } from "./model";
 import { tr } from "./model";
-export type Outcome = { message?: string; link?: string; ok?: boolean };
+export type Outcome = {
+  message?: string;
+  link?: string;
+  ok?: boolean;
+  field?: string;
+};
 export type Mutation = (old: Outcome, data: FormData) => Promise<Outcome>;
 export const val = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 export const list = (f: FormData, k: string) => f.getAll(k).map(String);

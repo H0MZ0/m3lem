@@ -1,5 +1,11 @@
 "use client";
-import { useActionState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useId,
+} from "react";
 import type { Mutation, Outcome } from "@/lib/forms";
 function field(target: EventTarget) {
   return target instanceof HTMLInputElement ||
@@ -12,15 +18,44 @@ export function ActionForm({
   action,
   children,
   className = "",
+  keepValues = false,
 }: {
   action: Mutation;
   children: React.ReactNode;
   className?: string;
+  keepValues?: boolean;
 }) {
   const [state, run, pending] = useActionState<Outcome, FormData>(action, {});
+  const form = useRef<HTMLFormElement>(null),
+    messageId = useId();
+  useEffect(() => {
+    if (!state.field) return;
+    const input = form.current?.elements.namedItem(state.field);
+    if (!(input instanceof HTMLElement)) return;
+    input.setAttribute("aria-invalid", "true");
+    input.setAttribute("aria-describedby", messageId);
+    input.focus();
+    return () => {
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("aria-describedby");
+    };
+  }, [state, messageId]);
   return (
     <form
       action={run}
+      ref={form}
+      onSubmit={
+        keepValues
+          ? (e) => {
+              e.preventDefault();
+              const data = new FormData(
+                e.currentTarget,
+                (e.nativeEvent as SubmitEvent).submitter,
+              );
+              startTransition(() => run(data));
+            }
+          : undefined
+      }
       className={className}
       aria-busy={pending}
       onInputCapture={(e) => field(e.target)?.setCustomValidity("")}
@@ -53,7 +88,11 @@ export function ActionForm({
         {children}
       </fieldset>
       {state.message && (
-        <p className={state.ok ? "notice" : "problem"} role="status">
+        <p
+          id={messageId}
+          className={state.ok ? "notice" : "problem"}
+          role="status"
+        >
           {state.message}
         </p>
       )}

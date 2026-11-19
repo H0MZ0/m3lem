@@ -34,6 +34,8 @@ Playwright starts the production web server if necessary. Its setup reconfirms t
 
 ## Actual run — 19 November 2026
 
+**Audit fixes:** 14 TAP tests and all six browser tests passed. On the 360×800 Darija plumbing results screen, the first card started at 259 px and the contact row at 590 px in the local demo. Browser checks cover preserving a profile draft after an invalid phone, retaining unsubmitted filters across a locale switch, keeping today on shortcuts, and the tabbed gallery → independent moderation → named review flow. `tests/browser/recovery.spec.ts` creates a temporary identity, requests a reset from the UI, reads the actual email in the loopback Mailpit inbox (port 54324), follows the PKCE link and logs in with the replacement password. External email delivery still needs a hosted SMTP check.
+
 **Region-first catalog update:** the local preview was upgraded without a reset. All 385 cities/urban centres are assigned to the 12 regions. The desktop flow selects Tanger through its region, publishes the profile and finds it in the city’s carpentry directory. All 12 TAP tests and the five browser scenarios passed (the desktop case was rerun after correcting its label selector). Formatting, lint, strict TypeScript and the production build passed. The table below records the original pilot verification.
 
 | Command / check                                                              | Outcome                                                                                                                                        |

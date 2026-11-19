@@ -23,6 +23,8 @@ npm run dev
 
 Visit **http://localhost:3000** for Darija, `/fr` for French, `/fr/workspace` for the artisan workspace, or `/fr/admin` for staff. `supabase stop` stops the local services. Local email confirmation is disabled; production email configuration is separate.
 
+Try `الما كيسرب` in Casablanca. On mobile the first results are visible above the collapsed search controls' expanded content. To test **Mot de passe oublié**, open the local inbox at **http://127.0.0.1:54324** and follow the email in the same browser. Use a new local account rather than changing a shared demo password.
+
 | Local role | Email                    | Example                                                                            |
 | ---------- | ------------------------ | ---------------------------------------------------------------------------------- |
 | Artisan    | `artisan1@m3lem.example` | Plumbing in Casablanca; approved illustration, moderated sample review, free visit |

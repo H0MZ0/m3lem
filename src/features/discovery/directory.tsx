@@ -8,7 +8,8 @@ import {
   type Item,
   type Card,
 } from "@/lib/model";
-import { Available, Location } from "./controls";
+import { Available } from "./controls";
+import { ContactLink } from "./contact-link";
 export function Icon({ slug }: { slug: string }) {
   const paths: Record<string, React.ReactNode> = {
     plomberie: (
@@ -41,71 +42,18 @@ export function Icon({ slug }: { slug: string }) {
     </svg>
   );
 }
-export function SearchBox({
-  l,
-  items,
-  city,
-  trade = "",
-  today = false,
-  onCityChange,
-}: {
-  l: Locale;
-  items: Item[];
-  city: string;
-  trade?: string;
-  today?: boolean;
-  onCityChange?: (slug: string) => void;
-}) {
-  return (
-    <form action={`/${l}/search`} className="finder">
-      <label>
-        {tr(l, "شنو خاصك؟", "De quoi avez-vous besoin ?")}
-        <input
-          name="q"
-          list="trade-list"
-          defaultValue={nameOf(items, trade, l)}
-          placeholder={tr(
-            l,
-            "مثلاً: الماء كيسرب",
-            "Ex. : fuite d’eau, plombier",
-          )}
-          maxLength={100}
-        />
-        <datalist id="trade-list">
-          {items
-            .filter((i) => i.kind === "trade")
-            .map((i) => (
-              <option key={i.slug} value={i[l]} />
-            ))}
-        </datalist>
-      </label>
-      <Location
-        l={l}
-        items={items}
-        initial={city}
-        onCityChange={onCityChange}
-      />
-      <label className="check">
-        <input type="checkbox" name="today" value="1" defaultChecked={today} />
-        {tr(l, "متاح اليوم", "Disponible aujourd’hui")}
-      </label>
-      <button>
-        {tr(l, "قلّب على معلّم", "Trouver un artisan")}{" "}
-        <span aria-hidden="true">⌕</span>
-      </button>
-    </form>
-  );
-}
 export function Shortcuts({
   l,
   items,
   city,
   expanded = false,
+  today = false,
 }: {
   l: Locale;
   items: Item[];
   city: string;
   expanded?: boolean;
+  today?: boolean;
 }) {
   return (
     <div className="shortcuts">
@@ -124,7 +72,12 @@ export function Shortcuts({
               ].includes(i.slug)),
         )
         .map((i) => (
-          <a key={i.slug} href={`/${l}/city/${city}/${i.slug}`}>
+          <a
+            key={i.slug}
+            href={
+              `/${l}/search` + qs({ city, q: i.slug, today: today ? "1" : "" })
+            }
+          >
             <span className={"icon " + i.slug}>
               <Icon slug={i.slug} />
             </span>
@@ -170,13 +123,25 @@ export function Contact({
     <div className="contact">
       {links ? (
         <>
-          <a className="button" href={links.tel}>
+          <ContactLink
+            channel="call"
+            trade={trade || p.trades[0]}
+            id={p.id}
+            city={p.city}
+            href={links.tel}
+          >
             {tr(l, "عيّط", "Appeler")}
-          </a>
+          </ContactLink>
           {links.wa && (
-            <a className="button alt" href={links.wa}>
+            <ContactLink
+              channel="whatsapp"
+              trade={trade || p.trades[0]}
+              id={p.id}
+              city={p.city}
+              href={links.wa}
+            >
               {tr(l, "واتساب", "WhatsApp")}
-            </a>
+            </ContactLink>
           )}
         </>
       ) : (
@@ -269,11 +234,17 @@ export function Result({
           </h3>
         </div>
       </header>
+      <p className="service-line">{p.services}</p>
       <p>
         <Coverage items={items} p={p} l={l} />
       </p>
       <Badge p={p} l={l} />
       <Facts p={p} l={l} />
+      <a href={href}>
+        {p.gallery.length
+          ? tr(l, "شوف خدمتو", "Voir ses réalisations")
+          : tr(l, "شوف الخدمات ديالو", "Voir ses services")}
+      </a>
       <Contact
         p={p}
         l={l}

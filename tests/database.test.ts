@@ -42,6 +42,7 @@ test("migration, publication and permission contract on disposable Postgres", as
       "supabase/migrations/202611190004_artisan_trades.sql",
       "supabase/migrations/202611190005_regions.sql",
       "supabase/migrations/202611190006_city_discovery.sql",
+      "supabase/migrations/202611190007_marketplace_workflows.sql",
       "scripts/demo.sql",
     ])
       await db.exec(await sql(path));
@@ -115,6 +116,62 @@ test("migration, publication and permission contract on disposable Postgres", as
       },
     );
     let draft: string, live: string;
+    await t.test(
+      "anonymous signals aggregate, exclude demo contacts and are only reported to staff",
+      async () => {
+        await role("anon");
+        await assert.rejects(
+          one("public.discovery_summary()"),
+          /permission denied/,
+        );
+        await assert.rejects(
+          one("public.review_subject($1)", [token]),
+          /permission denied/,
+        );
+        await role("service_role");
+        await one("public.count_discovery('search','casablanca','plomberie')");
+        await one(
+          "public.count_discovery('call','casablanca','plomberie',false,$1)",
+          [id],
+        );
+        await role("authenticated", 2);
+        await assert.rejects(one("public.discovery_summary()"), /staff/);
+        await role("authenticated", 4);
+        const result = await one<{
+          searches: number;
+          empty: number;
+          calls: number;
+        }>("public.discovery_summary()");
+        assert.equal(result.searches, 1);
+        assert.equal(result.empty, 1);
+        assert.equal(result.calls, 0);
+        await db.exec(
+          `reset role;update directory.profiles set demo=false where id='${id}'`,
+        );
+        await role("service_role");
+        await one("public.count_discovery('search','casablanca','plomberie')");
+        for (const channel of ["call", "whatsapp"])
+          await one(
+            "public.count_discovery($1,'casablanca','plomberie',false,$2)",
+            [channel, id],
+          );
+        await one(
+          "public.count_discovery('call','tanger','plomberie',false,$1)",
+          [id],
+        );
+        await role("authenticated", 4);
+        assert.deepEqual(await one("public.discovery_summary()"), {
+          searches: 2,
+          empty: 1,
+          calls: 1,
+          whatsapp: 1,
+          gaps: [{ city: "casablanca", trade: "plomberie", misses: 1 }],
+        });
+        await db.exec(
+          `reset role;update directory.profiles set demo=true where id='${id}'`,
+        );
+      },
+    );
     await t.test(
       "owners cannot set verification/admin, read other assets or publish; draft edits retain approved snapshot",
       async () => {
@@ -201,10 +258,15 @@ test("migration, publication and permission contract on disposable Postgres", as
         ]);
         const before = (await detail())!.count;
         await role("service_role");
+        assert.equal(
+          await one("public.review_subject($1)", [token]),
+          "Edited atelier",
+        );
         await assert.rejects(
           one("public.consume_invite($1,8,'Invalid stars')", [token]),
         );
         await one("public.consume_invite($1,5,'Very tidy work')", [token]);
+        assert.equal(await one("public.review_subject($1)", [token]), null);
         await assert.rejects(
           one("public.consume_invite($1,4,'Duplicate')", [token]),
         );

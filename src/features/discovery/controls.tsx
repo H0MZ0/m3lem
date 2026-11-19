@@ -2,10 +2,26 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { tr, type Item, type Locale } from "@/lib/model";
+import { useSearchDraft } from "./draft-context";
 export function Language({ l }: { l: Locale }) {
   const path = usePathname(),
-    q = useSearchParams().toString(),
+    params = new URLSearchParams(useSearchParams().toString()),
     other = l === "ar" ? "fr" : "ar";
+  const { entry } = useSearchDraft();
+  if (entry?.path === path) {
+    const d = entry.draft;
+    for (const [key, value] of Object.entries({
+      edit: "1",
+      dq: d.q,
+      dc: d.city,
+      dr: d.region,
+      dt: d.today ? "1" : "",
+    })) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+  }
+  const q = params.toString();
   return (
     <a
       className="lang"
@@ -23,23 +39,27 @@ export function Location({
   items,
   l,
   initial,
+  initialRegion,
   onCityChange,
 }: {
   items: Item[];
   l: Locale;
   initial: string;
-  onCityChange?: (slug: string) => void;
+  initialRegion?: string;
+  onCityChange?: (slug: string, region: string) => void;
 }) {
   const [city, setCity] = useState(initial);
   const [region, setRegion] = useState(
-    items.find((i) => i.kind === "city" && i.slug === initial)?.parent ?? "",
+    initialRegion ??
+      items.find((i) => i.kind === "city" && i.slug === initial)?.parent ??
+      "",
   );
   const cities = items
     .filter((i) => i.kind === "city" && i.parent === region)
     .sort((a, b) => a[l].localeCompare(b[l], l));
-  function choose(value: string) {
+  function choose(value: string, parent = region) {
     setCity(value);
-    onCityChange?.(value);
+    onCityChange?.(value, parent);
   }
   return (
     <>
@@ -51,7 +71,7 @@ export function Location({
           required
           onChange={(e) => {
             setRegion(e.target.value);
-            choose("");
+            choose("", e.target.value);
           }}
         >
           <option value="" disabled>

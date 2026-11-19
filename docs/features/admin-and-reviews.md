@@ -8,6 +8,8 @@ Expand **Nouvelle entrée**. Enter a globally unique, stable ASCII slug, bilingu
 
 ### Listings, confirmation and reports
 
+Pending listings come first, followed by reports, pending reviews, other listings and catalog maintenance. When editing a live listing, the queue compares the working revision to its approved snapshot. Staff see old/new values for changed fields, including phone, consent and photo order. An invitation displays the name on the published listing; an expired or consumed link no longer presents a rating form.
+
 Open a pending fiche and inspect its contact consent, services, coverage, fee and **every selected photo**. Approve to replace the live snapshot, or enter an actionable reason and request corrections. Suspend for a serious problem, recording the reason; this immediately hides the listing and prevents public image access. Return a suspended profile for corrections before a new review. A revision ID travels with each decision; a stale review must reload.
 
 To confirm a number, call the number on the **currently published revision**, establish that the artisan answers and agrees it is their business contact, and record the method/outcome (for example, “staff callback answered; public contact confirmed”). Choose **Confirmer le numéro**. The actor, timestamp and note are recorded; the badge says only “Numéro confirmé par l’équipe”. It certifies neither identity nor trade qualifications. No government ID upload exists. A different approved number requires a new confirmation.
@@ -27,3 +29,9 @@ Rate limiting runs before anonymous writes: five reports or twenty review attemp
 **بالدارجة:** دخل للإدارة، حلّ البروفايل وراجع الخدمة والتصاور والرقم. وافق ولا كتب شنو خاصّو يتصلّح. باش تأكد النمرة عيّط وسجّل كيفاش تأكدتي. إلا الزبون أكد أن الخدمة سالات، كتب دليل مختصر، خرج الرابط وصيفطو ليه بوحدو. الرأي ما كيبان حتى تراجعو وتنشرو.
 
 **Verify:** `src/features/moderation/actions.ts`, `src/features/catalog/editor.tsx`, `src/app/[lang]/admin`, `src/app/[lang]/review` and the SQL RPCs implement this workflow. The browser test issues and uses a real link, rejects reuse, moderates the review and closes a report.
+
+### Where to recruit
+
+**Recherche et contacts** summarizes the past 30 Moroccan calendar days. It counts recognized `/search` submissions (including shortcuts), which of those had no eligible result, and taps on enabled phone or WhatsApp links. The top five city/trade combinations with empty searches indicate where more supply or more availability confirmations could help. These are approximate counts, not unique visitors, attributable conversions or confirmed jobs. Direct visits to a result URL are not extra submissions. Local demo traffic is excluded.
+
+Migration `202611190007_marketplace_workflows.sql` stores daily totals only, not raw searches, IPs, phone numbers or customer identifiers. Reads require staff membership; writes use server-only RPCs. Metrics are best effort: navigation and phone links do not depend on the counter succeeding. Delete old `directory.discovery_daily` rows according to your retention policy.

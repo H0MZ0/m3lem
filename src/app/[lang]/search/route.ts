@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { countDiscovery } from "@/features/discovery/metrics";
 import { catalog, locale } from "@/lib/server";
 import { resolveTrade, qs } from "@/lib/model";
 export async function GET(
@@ -13,6 +14,15 @@ export async function GET(
   if (!city || (p.has("region") && city.parent !== p.get("region")))
     return NextResponse.redirect(new URL(`/${l}`, req.url));
   const trade = q ? resolveTrade(items, q) : "all";
+  if (trade)
+    after(() =>
+      countDiscovery(
+        "search",
+        city.slug,
+        trade === "all" ? "" : trade,
+        p.get("today") === "1",
+      ),
+    );
   return NextResponse.redirect(
     new URL(
       `/${l}/city/${city.slug}/${trade ?? "all"}` +
