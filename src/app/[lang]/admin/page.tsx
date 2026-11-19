@@ -25,7 +25,7 @@ export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
             </summary>
             <p>{r.services}</p>
             <p>
-              {[...r.trades, r.city, ...r.areas]
+              {[...r.trades, r.city]
                 .map((s) => nameOf(items, s, l))
                 .join(" · ")}{" "}
               · {r.fee ?? "—"} MAD

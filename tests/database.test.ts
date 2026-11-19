@@ -21,10 +21,9 @@ test("migration, publication and permission contract on disposable Postgres", as
   const detail = () =>
       one<Detail | null>("public.artisan_detail($1,true)", [id]),
     work = () => one<Workspace>("public.my_workspace()"),
-    find = (area = "", trade = "plomberie", today = false) =>
-      one<Card[]>("public.find_artisans('casablanca',$1,$2,$3,1,true)", [
+    find = (trade = "plomberie", today = false) =>
+      one<Card[]>("public.find_artisans('casablanca',$1,$2,1,true)", [
         trade,
-        area,
         today,
       ]);
   try {
@@ -41,6 +40,8 @@ test("migration, publication and permission contract on disposable Postgres", as
       "supabase/migrations/202611190002_media_library.sql",
       "supabase/migrations/202611190003_moroccan_cities.sql",
       "supabase/migrations/202611190004_artisan_trades.sql",
+      "supabase/migrations/202611190005_regions.sql",
+      "supabase/migrations/202611190006_city_discovery.sql",
       "scripts/demo.sql",
     ])
       await db.exec(await sql(path));
@@ -48,10 +49,28 @@ test("migration, publication and permission contract on disposable Postgres", as
       "national catalog is available to anonymous clients without inventing coverage",
       async () => {
         await role("anon");
-        const items = await one<{ slug: string; kind: string }[]>(
-          "public.catalog_items()",
-        );
+        const items = await one<
+          { slug: string; kind: string; parent: string | null }[]
+        >("public.catalog_items()");
         assert.equal(items.filter((i) => i.kind === "city").length, 385);
+        const regions = items
+          .filter((i) => i.kind === "region")
+          .map((i) => i.slug);
+        assert.equal(regions.length, 12);
+        assert.ok(
+          items
+            .filter((i) => i.kind === "city")
+            .every((i) => regions.includes(i.parent!)),
+        );
+        assert.equal(
+          items.find((i) => i.slug === "tanger")?.parent,
+          "region-01",
+        );
+        assert.equal(
+          items.find((i) => i.slug === "casablanca")?.parent,
+          "region-06",
+        );
+        assert.ok(!items.some((i) => i.kind === "area"));
         assert.equal(items.filter((i) => i.kind === "trade").length, 190);
         for (const slug of [
           "casablanca",
@@ -70,9 +89,7 @@ test("migration, publication and permission contract on disposable Postgres", as
             slug,
           );
         assert.deepEqual(
-          await one(
-            "public.find_artisans('dakhla','menuiserie','','false',1,true)",
-          ),
+          await one("public.find_artisans('dakhla','menuiserie',false,1,true)"),
           [],
         );
       },
@@ -83,9 +100,9 @@ test("migration, publication and permission contract on disposable Postgres", as
         await role("anon");
         assert.deepEqual(await one("public.find_artisans('casablanca')"), []);
         assert.equal((await detail())!.phone, null);
-        assert.equal((await find("maarif"))[0].areas[0], "maarif");
-        assert.equal((await find("maarif", "plomberie", true)).length, 1);
-        assert.deepEqual(await find("sidi-maarouf", "peinture"), []);
+        assert.equal((await find()).length, 2);
+        assert.equal((await find("plomberie", true)).length, 1);
+        assert.ok(!("areas" in (await find("peinture"))[0]));
         await assert.rejects(
           db.query("select * from directory.reports"),
           /permission denied/,
@@ -225,7 +242,7 @@ test("migration, publication and permission contract on disposable Postgres", as
           new Date(d.expires_at!).toISOString(),
           "2024-03-11T00:00:00.000Z",
         );
-        assert.deepEqual(await find("", "plomberie", true), []);
+        assert.deepEqual(await find("plomberie", true), []);
       },
     );
     await t.test(

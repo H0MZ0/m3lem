@@ -4,7 +4,7 @@ Enter `/fr/admin` or `/ar/admin` using an operator-granted staff account. Author
 
 ### Catalog
 
-Expand **Nouvelle entrée**. Enter a globally unique, stable ASCII slug, bilingual labels and kind. Create the city before creating its neighborhoods; set a parent only for a neighborhood. Add comma-separated aliases on a trade. Edit labels, aliases and active status on an existing row. Kind, parent and slug are immutable. Inactive rows retain their foreign keys but are no longer selectable; an inactive city also hides its neighborhoods. Archiving the last active trade or all explicit service areas hides the listing rather than silently treating it as citywide.
+Expand **Nouvelle entrée**. Enter a globally unique, stable ASCII slug, bilingual labels and kind. For a city, select the region it belongs to; trades have no parent. Staff may correct a city's region, labels, aliases and active status without changing its slug or breaking profile references. Archiving a city or the last active trade hides the listing.
 
 ### Listings, confirmation and reports
 

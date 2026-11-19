@@ -2,7 +2,7 @@ export type Locale = "ar" | "fr";
 export const tr = (l: Locale, ar: string, fr: string) => (l === "ar" ? ar : fr);
 export type Item = {
   slug: string;
-  kind: "trade" | "city" | "area";
+  kind: "trade" | "city" | "region";
   parent: string | null;
   ar: string;
   fr: string;
@@ -15,7 +15,6 @@ export type Revision = {
   services: string;
   city: string;
   trades: string[];
-  areas: string[];
   phone: string;
   consent: boolean;
   whatsapp: boolean;
@@ -86,13 +85,6 @@ export function matchesItem(i: Item, query: string) {
     )
   );
 }
-export function defaultCity(items: Item[], preferred = "casablanca") {
-  return (
-    items.find((i) => i.kind === "city" && i.slug === preferred)?.slug ??
-    items.find((i) => i.kind === "city")?.slug ??
-    ""
-  );
-}
 export function normalizePhone(input: string) {
   const s = input
     .replace(/[\u0660-\u0669]/g, (c) => String(c.charCodeAt(0) - 0x660))
@@ -107,14 +99,14 @@ export function contacts(
   demo: boolean,
   l: Locale,
   trade: string,
-  area: string,
+  city: string,
 ) {
   const n = phone && normalizePhone(phone);
   if (!n || demo) return null;
   const text = tr(
     l,
-    `سلام، خاصني ${trade} فـ ${area}. واش ممكن نهضرو؟`,
-    `Bonjour, je cherche un artisan pour ${trade} à ${area}. Pouvons-nous en discuter ?`,
+    `سلام، خاصني ${trade} فـ ${city}. واش ممكن نهضرو؟`,
+    `Bonjour, je cherche un artisan pour ${trade} à ${city}. Pouvons-nous en discuter ?`,
   );
   return {
     tel: `tel:${n}`,

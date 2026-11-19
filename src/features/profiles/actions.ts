@@ -2,7 +2,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { revalidatePath } from "next/cache";
-import { access, locale, rpc, privileged } from "@/lib/server";
+import { access, locale, rpc, privileged, catalog } from "@/lib/server";
 import { normalizePhone, tr, type Workspace } from "@/lib/model";
 import { done, fail, list, val, type Outcome } from "@/lib/forms";
 export async function save(
@@ -51,6 +51,21 @@ export async function save(
       ),
     };
   try {
+    if (
+      !(await catalog()).some(
+        (i) =>
+          i.kind === "city" &&
+          i.slug === val(f, "city") &&
+          i.parent === val(f, "region"),
+      )
+    )
+      return {
+        message: tr(
+          l,
+          "اختار مدينة من الجهة اللي حددتي.",
+          "Choisissez une ville de la région sélectionnée.",
+        ),
+      };
     await rpc("save_profile", {
       body: {
         base: val(f, "base"),
@@ -58,7 +73,6 @@ export async function save(
         services: val(f, "services"),
         city: val(f, "city"),
         trades: list(f, "trades"),
-        areas: list(f, "areas"),
         phone,
         fee: fee ? Number(fee) : null,
         consent: f.has("consent"),

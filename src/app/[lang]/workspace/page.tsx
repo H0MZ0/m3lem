@@ -1,5 +1,5 @@
 import { locale, access, rpc, catalog } from "@/lib/server";
-import { tr, type Workspace, stateName, defaultCity } from "@/lib/model";
+import { tr, type Workspace, stateName } from "@/lib/model";
 import { TradeChoices } from "@/features/catalog/pickers";
 import { ActionForm } from "@/features/accounts/form";
 import { Location } from "@/features/discovery/controls";
@@ -113,13 +113,7 @@ export default async function WorkspacePage({
                 .filter((i) => i.kind === "trade" && r?.trades.includes(i.slug))
                 .map((i) => i.slug)}
             />
-            <Location
-              multiple
-              items={items}
-              l={l}
-              initial={r?.city ?? defaultCity(items, process.env.PILOT_CITY)}
-              areas={r?.areas}
-            />
+            <Location items={items} l={l} initial={r?.city ?? ""} />
             <label>
               {t("نمرة التواصل", "Téléphone public")}
               <input

@@ -23,12 +23,12 @@ npm run dev
 
 Visit **http://localhost:3000** for Darija, `/fr` for French, `/fr/workspace` for the artisan workspace, or `/fr/admin` for staff. `supabase stop` stops the local services. Local email confirmation is disabled; production email configuration is separate.
 
-| Local role | Email                    | Example                                                                       |
-| ---------- | ------------------------ | ----------------------------------------------------------------------------- |
-| Artisan    | `artisan1@m3lem.example` | Citywide plumbing; approved illustration, moderated sample review, free visit |
-| Artisan    | `artisan2@m3lem.example` | Electricity and plumbing in Maârif; fixed fee, expired availability           |
-| Artisan    | `artisan3@m3lem.example` | Painting in Bourgogne; unspecified fee, phone only, no reviews                |
-| Staff      | `staff@m3lem.example`    | Catalog, moderation, reports and review links                                 |
+| Local role | Email                    | Example                                                                            |
+| ---------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| Artisan    | `artisan1@m3lem.example` | Plumbing in Casablanca; approved illustration, moderated sample review, free visit |
+| Artisan    | `artisan2@m3lem.example` | Electricity and plumbing in Casablanca; fixed fee, expired availability            |
+| Artisan    | `artisan3@m3lem.example` | Painting in Casablanca; unspecified fee, phone only, no reviews                    |
+| Staff      | `staff@m3lem.example`    | Catalog, moderation, reports and review links                                      |
 
 All four **local-only** passwords are `Atelier-local-2026!`. To try onboarding from scratch, create a new account on the account page. Demo contact controls are disabled; demo RPC results omit phone numbers. Seed availability naturally expires; sign in as artisan1 and confirm again for a fresh demonstration.
 
@@ -39,7 +39,6 @@ All four **local-only** passwords are `Atelier-local-2026!`. To try onboarding f
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Project endpoint and public client key                                                                                   |
 | `SUPABASE_SERVICE_ROLE_KEY`                                        | Server-only credential for sanitized Storage operations and guarded public submissions                                   |
 | `SITE_URL`                                                         | Absolute web origin for auth redirects, review links and SEO                                                             |
-| `PILOT_CITY`                                                       | Default active city slug; falls back to the first active city                                                            |
 | `LOCAL_DEMO`                                                       | `1` explicitly enables the local fixture display; requires loopback site **and** project. Omit in deployed environments. |
 | `LOCAL_DATABASE_URL`                                               | Loopback database connection for the seed script only                                                                    |
 | `TRUSTED_CLIENT_IP_HEADER`                                         | Optional header overwritten by your trusted ingress with the client IP. Unset uses a shared anonymous submission budget. |

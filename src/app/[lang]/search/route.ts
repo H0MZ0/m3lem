@@ -10,14 +10,14 @@ export async function GET(
     items = await catalog(),
     q = (p.get("q") ?? "").trim().slice(0, 100),
     city = items.find((i) => i.slug === p.get("city") && i.kind === "city");
-  if (!city) return NextResponse.redirect(new URL(`/${l}`, req.url));
+  if (!city || (p.has("region") && city.parent !== p.get("region")))
+    return NextResponse.redirect(new URL(`/${l}`, req.url));
   const trade = q ? resolveTrade(items, q) : "all";
   return NextResponse.redirect(
     new URL(
       `/${l}/city/${city.slug}/${trade ?? "all"}` +
         qs({
           q: trade ? "" : q,
-          area: p.get("area") ?? "",
           today: p.get("today") === "1" ? "1" : "",
         }),
       req.url,

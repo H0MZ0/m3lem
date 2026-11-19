@@ -1,5 +1,5 @@
 import { catalog, locale } from "@/lib/server";
-import { defaultCity, tr } from "@/lib/model";
+import { tr } from "@/lib/model";
 import { seo } from "@/lib/seo";
 import { HomeSearch } from "@/features/discovery/home-search";
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
@@ -17,8 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
 }
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const l = locale((await params).lang),
-    items = await catalog(),
-    city = defaultCity(items, process.env.PILOT_CITY);
+    items = await catalog();
   return (
     <>
       <section className="hero">
@@ -30,8 +29,8 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <p>
             {tr(
               l,
-              "قلّب على معلّم كيخدم فحومتك، وشوف خدمتو قبل ما تعيّط.",
-              "Trouvez un artisan dans votre quartier. Découvrez son travail avant de l’appeler.",
+              "اختار الجهة والمدينة باش تلقى معلّم قريب ليك.",
+              "Choisissez votre région puis votre ville pour trouver un artisan.",
             )}
           </p>
         </div>
@@ -39,8 +38,8 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <span>✳</span>
         </div>
       </section>
-      {city ? (
-        <HomeSearch l={l} items={items} initial={city} />
+      {items.some((i) => i.kind === "city" && i.parent) ? (
+        <HomeSearch l={l} items={items} initial="" />
       ) : (
         <p>
           {tr(

@@ -34,10 +34,7 @@ export default async function Profile({ params, searchParams }: Props) {
     l = locale(lang),
     [p, items, q] = await Promise.all([detail(id), catalog(), searchParams]),
     t = (a: string, b: string) => tr(l, a, b),
-    trade = p.trades.includes(scalar(q.trade)) ? scalar(q.trade) : "",
-    area =
-      items.find((i) => i.parent === p.city && i.slug === scalar(q.area))
-        ?.slug ?? "";
+    trade = p.trades.includes(scalar(q.trade)) ? scalar(q.trade) : "";
   return (
     <section className="narrow">
       <p>
@@ -45,7 +42,6 @@ export default async function Profile({ params, searchParams }: Props) {
           href={
             `/${l}/city/${p.city}/${trade || "all"}` +
             qs({
-              area,
               today: q.today === "1" ? "1" : "",
               page: scalar(q.page),
             })
@@ -76,7 +72,7 @@ export default async function Profile({ params, searchParams }: Props) {
         {p.verified && (
           <p>{t("الإدارة أكدت النمرة", "Numéro confirmé par l’équipe")}</p>
         )}
-        <Contact {...{ p, l, items, trade, area, local: demo() }} />
+        <Contact {...{ p, l, items, trade, local: demo() }} />
         <small>
           {t(
             "التواصل ماشي حجز. تقدر تصيفط صور ولا صوت من واتساب.",

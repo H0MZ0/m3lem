@@ -1,6 +1,6 @@
 # National catalog
 
-The national taxonomy is application data: migrations `202611190003_moroccan_cities.sql` and `202611190004_artisan_trades.sql` install it even without the demo seed. Existing slugs, labels, archive decisions and profile references are preserved. Apply both migrations to an existing installation; do not reset the database. `PILOT_CITY` selects the default city, not the geographic reach of the service.
+The national taxonomy is installed by migrations even without the demo seed. Migrations `202611190005_regions.sql` and `202611190006_city_discovery.sql` attach the 385 cities to their census regions and retire neighborhood selection. Apply pending migrations to an existing installation without resetting it. Existing city slugs and profile links remain valid. Staff should assign a region to any pre-existing custom city outside the HCP dataset so it appears in the picker.
 
 ## Locations
 
@@ -10,6 +10,7 @@ Attribution: Haut-Commissariat au Plan, RGPH 2024; [HCP reuse terms](https://www
 
 ```sh
 python3 scripts/catalog/cities.py population.xlsx urban-housing.xlsx > cities.sql
+python3 scripts/catalog/cities.py population.xlsx urban-housing.xlsx --regions > regions.sql
 ```
 
 Compare the output with the committed migration. Publish future revisions as new migrations. Updating data needs no external service at runtime.
@@ -18,4 +19,4 @@ Compare the output with the committed migration. Publish future revisions as new
 
 The 190 searchable marketplace categories draw on the Moroccan national artisan register's production and service branches ([decree 2.21.991, Bulletin officiel 7056, pp. 155–160](https://rna.gov.ma/wp-content/uploads/2022/05/القانون-50-17-ونصوصه-التطبيقية.pdf)). The vocabulary includes building work, repairs, textiles, leather, wood, metal, ceramics, jewellery, food crafts, personal services and traditional decorative arts. It also includes home-service specialities such as drainage, gardening, cleaning and home automation. Labels and aliases are adapted for customers; these are marketplace categories, not a certification register or a one-to-one legal classification.
 
-Search a trade by its French or Arabic name, slug or configured alias (e.g. `nejjar`, `نجار`, `menuisier`). The city filter and full trade browser accept partial matches in either language. Artisans can filter their trade checklist without losing previous selections. Staff can add or archive entries in the catalog editor.
+Search a trade by its French or Arabic name, slug or configured alias (e.g. `nejjar`, `نجار`, `menuisier`). Pick one of the 12 regions first, then choose among its cities. Changing the region clears the city. Artisans can filter their trade checklist without losing previous selections. Staff can add or archive cities and trades in the catalog editor.

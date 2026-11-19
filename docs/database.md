@@ -8,11 +8,9 @@ erDiagram
   AUTH_USERS ||--o| ADMINS : operator_grant
   PROFILES ||--o{ REVISIONS : live_and_working
   REVISIONS ||--|{ REVISION_TRADES : offers
-  REVISIONS ||--o{ REVISION_AREAS : covers
-  CATALOG ||--o{ REVISION_AREAS : area
   CATALOG ||--o{ REVISION_TRADES : trade
   CATALOG ||--o{ REVISIONS : city
-  CATALOG ||--o{ CATALOG : city_of_area
+  CATALOG ||--o{ CATALOG : region_of_city
   PROFILES ||--o{ MEDIA : owns
   REVISIONS ||--o{ GALLERY : ordered
   MEDIA ||--o{ GALLERY : attached
@@ -22,7 +20,7 @@ erDiagram
   AUTH_USERS ||--o{ HISTORY : action
 ```
 
-`directory` is a non-exposed schema. `profiles.id` is public; `owner_id` is private, unique and distinct from the public ID. Composite foreign keys prevent pointing at another profile’s revision. Catalog keys and parents cannot be changed through the editor; archive instead. Empty `revision_areas` means the whole revision city, **not** all cities. Catalog writes validate parent kind; saves validate area parent, active status and trade kind.
+`directory` is a non-exposed schema. `profiles.id` is public; `owner_id` is private, unique and distinct from the public ID. Composite foreign keys prevent pointing at another profile’s revision. A city has a region parent; a revision stores a city, not a redundant region. Catalog writes validate the parent kind. Historical neighborhood relationships are retained privately but are no longer used for discovery or exposed in projections.
 
 `fee IS NULL` = not specified, `0` = free; a positive integer is a fixed visit fee in MAD. Phone and consent belong to the revision. `available_at`, staff-checked phone and verification time belong to the profile, separate from editable data. `gallery` enforces unique rank 1–8 and no duplicate asset per revision. `media.id` determines both Storage object names. `limits` holds hourly counters under keyed hashes. Reports, job evidence and staff history never enter a public projection.
 
@@ -38,7 +36,7 @@ erDiagram
 | Suspend                                  | `suspended`   | Clear `live`, availability and verification; deny editing           |
 | Return suspended listing for corrections | `draft`       | Hidden until resubmitted and approved                               |
 
-City/revision, trade/revision and area/revision indexes support directory filters. A partial live-profile index excludes suspended records. Primary keys cover owner lookup, hashed invitation lookup and ordered revision membership. The approved-review index supports public review counts, averages and date ordering. Search order ends in unique public ID.
+City/revision and trade/revision indexes support directory filters. A partial live-profile index excludes suspended records. Primary keys cover owner lookup, hashed invitation lookup and ordered revision membership. The approved-review index supports public review counts, averages and date ordering. Search order ends in unique public ID.
 
 ### Fixtures and verification
 

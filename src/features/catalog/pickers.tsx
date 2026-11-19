@@ -6,12 +6,12 @@ import { Editor } from "./editor";
 export function CatalogManager({ items, l }: { items: Item[]; l: Locale }) {
   const [query, setQuery] = useState(""),
     [slug, setSlug] = useState("");
-  const cities = items.filter((i) => i.kind === "city"),
-    found = items.filter((i) => matchesItem(i, query));
+  const regions = items.filter((i) => i.kind === "region"),
+    found = items.filter((i) => i.kind !== "region" && matchesItem(i, query));
   const chosen = items.find((i) => i.slug === slug);
   return (
     <div className="panel stack">
-      <Editor l={l} cities={cities} />
+      <Editor l={l} regions={regions} />
       <label>
         {tr(l, "قلّب فالدليل", "Rechercher dans le catalogue")}
         <input
@@ -35,7 +35,7 @@ export function CatalogManager({ items, l }: { items: Item[]; l: Locale }) {
         </select>
       </label>
       {chosen && (
-        <Editor key={chosen.slug} l={l} cities={cities} item={chosen} />
+        <Editor key={chosen.slug} l={l} regions={regions} item={chosen} />
       )}
     </div>
   );

@@ -14,8 +14,7 @@ begin
  'name',(array['ورشة نيلة · Atelier Nila','ورشة نحاس · Atelier Nhas','ورشة طين · Atelier Tine'])[k],
  'services',(array['تصليح التسربات وتبديل الروبيني • Fuites et robinetterie','تركيب المصابيح والروبينيات • Luminaires et robinetterie','صباغة الحيطان والبيبان • Murs et boiseries'])[k],
  'city','casablanca','phone','+21260000000'||k,'consent',true,'whatsapp',k<>3,
- 'fee',(array[0,80,null]::int[])[k],'trades',case k when 1 then '["plomberie"]'::jsonb when 2 then '["electricite","plomberie"]'::jsonb else '["peinture"]'::jsonb end,
- 'areas',case k when 1 then '[]'::jsonb when 2 then '["maarif"]'::jsonb else '["bourgogne"]'::jsonb end),true);
+ 'fee',(array[0,80,null]::int[])[k],'trades',case k when 1 then '["plomberie"]'::jsonb when 2 then '["electricite","plomberie"]'::jsonb else '["peinture"]'::jsonb end),true);
  select working into r from directory.profiles where id=pid;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',admin_id)::text,true);

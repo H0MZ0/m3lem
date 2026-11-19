@@ -46,7 +46,6 @@ export function SearchBox({
   items,
   city,
   trade = "",
-  area = "",
   today = false,
   onCityChange,
 }: {
@@ -54,7 +53,6 @@ export function SearchBox({
   items: Item[];
   city: string;
   trade?: string;
-  area?: string;
   today?: boolean;
   onCityChange?: (slug: string) => void;
 }) {
@@ -85,7 +83,6 @@ export function SearchBox({
         l={l}
         items={items}
         initial={city}
-        area={area}
         onCityChange={onCityChange}
       />
       <label className="check">
@@ -146,28 +143,19 @@ export function Coverage({
   l: Locale;
   items: Item[];
 }) {
-  return (
-    <>
-      {nameOf(items, p.city, l)} ·{" "}
-      {p.areas.length
-        ? p.areas.map((a) => nameOf(items, a, l)).join("، ")
-        : tr(l, "المدينة كاملة", "Toute la ville")}
-    </>
-  );
+  return nameOf(items, p.city, l);
 }
 export function Contact({
   p,
   l,
   items,
   trade,
-  area,
   local,
 }: {
   p: Card;
   l: Locale;
   items: Item[];
   trade: string;
-  area: string;
   local: boolean;
 }) {
   const links = contacts(
@@ -176,10 +164,7 @@ export function Contact({
     p.demo || local,
     l,
     nameOf(items, trade || p.trades[0], l),
-    [area, p.city]
-      .filter(Boolean)
-      .map((i) => nameOf(items, i, l))
-      .join(" · "),
+    nameOf(items, p.city, l),
   );
   return (
     <div className="contact">
@@ -239,7 +224,6 @@ export function Result({
   items,
   city,
   trade,
-  area,
   today,
   page,
   local,
@@ -249,7 +233,6 @@ export function Result({
   items: Item[];
   city: string;
   trade: string;
-  area: string;
   today: boolean;
   page: number;
   local: boolean;
@@ -259,7 +242,6 @@ export function Result({
     qs({
       city,
       trade,
-      area,
       today: today ? "1" : "",
       page: page > 1 ? String(page) : "",
     });
@@ -297,7 +279,6 @@ export function Result({
         l={l}
         items={items}
         trade={trade === "all" ? "" : trade}
-        area={area}
         local={local}
       />
     </article>

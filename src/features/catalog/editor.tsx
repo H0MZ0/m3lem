@@ -1,16 +1,18 @@
+import { useState } from "react";
 import { type Item, type Locale, tr } from "@/lib/model";
 import { ActionForm } from "@/features/accounts/form";
 import { catalogSave } from "@/features/moderation/actions";
 export function Editor({
   l,
   item,
-  cities,
+  regions,
 }: {
   l: Locale;
   item?: Item;
-  cities: Item[];
+  regions: Item[];
 }) {
   const t = (a: string, b: string) => tr(l, a, b);
+  const [kind, setKind] = useState(item?.kind ?? "trade");
   return (
     <details>
       <summary>
@@ -31,23 +33,30 @@ export function Editor({
         </label>
         <label>
           {t("النوع", "Type")}
-          <select name="kind" defaultValue={item?.kind ?? "trade"}>
+          <select
+            name="kind"
+            value={kind}
+            onChange={(e) =>
+              setKind(e.target.value === "city" ? "city" : "trade")
+            }
+          >
             <option value="trade">{t("حرفة", "Métier")}</option>
             <option value="city">{t("مدينة", "Ville")}</option>
-            <option value="area">{t("حي", "Quartier")}</option>
           </select>
         </label>
-        <label>
-          {t("المدينة ديال الحي", "Ville du quartier")}
-          <select name="parent" defaultValue={item?.parent ?? ""}>
-            <option value="">—</option>
-            {cities.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c[l]}
-              </option>
-            ))}
-          </select>
-        </label>
+        {kind === "city" && (
+          <label>
+            {t("الجهة ديال المدينة", "Région de la ville")}
+            <select name="parent" required defaultValue={item?.parent ?? ""}>
+              <option value="">—</option>
+              {regions.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c[l]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
           الدارجة
           <input

@@ -113,7 +113,7 @@ test("staff can maintain a trade alias and archive its directory without losing 
     if (restore.error) throw restore.error;
   }
 });
-test("mobile RTL search, French switch, explicit area expansion and keyboard navigation", async ({
+test("region first on mobile, city-only links, French switch and keyboard navigation", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
@@ -122,18 +122,25 @@ test("mobile RTL search, French switch, explicit area expansion and keyboard nav
   await page.keyboard.press("Tab");
   await expect(page.getByText("دوز للمحتوى")).toBeFocused();
   await page.locator("[name=q]").fill("الماء كيسرب");
-  await page.locator("[name=area]").selectOption("maarif");
+  const region = page.locator("[name=region]"),
+    city = page.locator("[name=city]");
+  await expect(region.locator("option")).toHaveCount(13);
+  await expect(city).toBeDisabled();
+  await expect(page.locator("[name=area]")).toHaveCount(0);
+  await region.selectOption("region-01");
+  await city.selectOption("tanger");
+  await expect(city.locator('option[value="casablanca"]')).toHaveCount(0);
+  await region.selectOption("region-06");
+  await expect(city).toHaveValue("");
+  await expect(city.locator('option[value="tanger"]')).toHaveCount(0);
+  await city.selectOption("casablanca");
   await page.locator("[name=today]").check();
   await page.getByRole("button", { name: /قلّب/ }).click();
-  await expect(page).toHaveURL(
-    /city\/casablanca\/plomberie\?area=maarif&today=1/,
-  );
+  await expect(page).toHaveURL(/city\/casablanca\/plomberie\?today=1$/);
   await expect(page.locator("article")).toHaveCount(1);
   await page.getByRole("link", { name: "Français" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-  await expect(page).toHaveURL(
-    /fr\/city\/casablanca\/plomberie\?area=maarif&today=1/,
-  );
+  await expect(page).toHaveURL(/fr\/city\/casablanca\/plomberie\?today=1$/);
   await page.getByRole("link", { name: /Atelier Nila/ }).click();
   await expect(
     page.getByRole("button", { name: "Appeler · démo" }),
@@ -142,15 +149,19 @@ test("mobile RTL search, French switch, explicit area expansion and keyboard nav
     page.locator('a[href^="tel:"],a[href^="https://wa.me/"]'),
   ).toHaveCount(0);
   await page.getByRole("link", { name: "Retour aux résultats" }).click();
-  await expect(page).toHaveURL(/area=maarif&today=1/);
+  await expect(page).toHaveURL(/plomberie\?today=1$/);
+  await expect(region).toHaveValue("region-06");
+  await expect(city).toHaveValue("casablanca");
   await page.locator("[name=q]").fill("peintre");
-  await page.locator("[name=area]").selectOption("sidi-maarouf");
+  await region.selectOption("region-12");
+  await city.selectOption("dakhla");
   await page.locator("[name=today]").uncheck();
   await page.getByRole("button", { name: "Trouver un artisan" }).click();
   await expect(
-    page.getByText(/Aucun artisan ne correspond dans ce quartier/),
+    page.getByText(/Aucun artisan ne correspond à ces critères/),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Élargir à toute la ville" }).click();
+  await page.goto("/fr/city/casablanca/peinture?area=sidi-maarouf");
+  await expect(page).toHaveURL(/\/casablanca\/peinture$/);
   await expect(page.getByRole("link", { name: /Atelier Tine/ })).toBeVisible();
   expect(
     await page.evaluate(
@@ -202,8 +213,12 @@ test("desktop: signup, private upload, moderation, report, review and suspension
     await page.getByLabel("Plomberie", { exact: true }).check();
     await page.getByLabel("Rechercher un métier").fill("nejjar");
     await page.getByLabel("Menuiserie bois", { exact: true }).check();
-    await page.getByText("Rechercher la ville", { exact: true }).click();
-    await page.getByLabel("Nom de la ville").fill("طنجة");
+    await page
+      .getByRole("combobox", { name: "Région", exact: true })
+      .selectOption("region-01");
+    await page
+      .getByRole("combobox", { name: "Ville", exact: true })
+      .selectOption("tanger");
     await expect(page.locator("select[name=city]")).toHaveValue("tanger");
     await page.getByLabel("Téléphone public").fill("0600000000");
     await page.getByLabel(/J’accepte la publication/).check();

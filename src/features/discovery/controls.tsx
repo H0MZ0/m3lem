@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { tr, matchesItem, type Item, type Locale } from "@/lib/model";
+import { tr, type Item, type Locale } from "@/lib/model";
 export function Language({ l }: { l: Locale }) {
   const path = usePathname(),
     q = useSearchParams().toString(),
@@ -23,110 +23,70 @@ export function Location({
   items,
   l,
   initial,
-  area = "",
-  multiple = false,
-  areas = [],
   onCityChange,
 }: {
   items: Item[];
   l: Locale;
   initial: string;
-  area?: string;
-  multiple?: boolean;
-  areas?: string[];
   onCityChange?: (slug: string) => void;
 }) {
   const [city, setCity] = useState(initial);
-  const [query, setQuery] = useState("");
+  const [region, setRegion] = useState(
+    items.find((i) => i.kind === "city" && i.slug === initial)?.parent ?? "",
+  );
   const cities = items
-    .filter((i) => i.kind === "city")
+    .filter((i) => i.kind === "city" && i.parent === region)
     .sort((a, b) => a[l].localeCompare(b[l], l));
   function choose(value: string) {
     setCity(value);
     onCityChange?.(value);
   }
-  const list = items.filter((i) => i.parent === city);
   return (
     <>
-      <div>
-        <label>
-          {tr(l, "فين؟ المدينة", "Où ? Ville")}
-          <select
-            name="city"
-            value={city}
-            onChange={(e) => choose(e.target.value)}
-            required
-          >
-            {!city && (
-              <option value="">
-                {tr(l, "اختار المدينة", "Choisissez la ville")}
-              </option>
-            )}
-            {cities
-              .filter((i) => matchesItem(i, query))
-              .map((i) => (
-                <option key={i.slug} value={i.slug}>
-                  {i[l]}
-                </option>
-              ))}
-          </select>
-        </label>
-        <details>
-          <summary>{tr(l, "قلّب بالاسم", "Rechercher la ville")}</summary>
-          <label>
-            {tr(l, "اسم المدينة", "Nom de la ville")}
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => {
-                const text = e.target.value;
-                setQuery(text);
-                const found = cities.filter((i) => matchesItem(i, text));
-                if (found.length === 1) choose(found[0].slug);
-                else if (!found.some((i) => i.slug === city)) choose("");
-              }}
-            />
-          </label>
-        </details>
-      </div>
-      {multiple ? (
-        <fieldset key={city}>
-          <legend>
-            {tr(
-              l,
-              "الأحياء · بلا اختيار = المدينة كاملة",
-              "Quartiers · aucun = toute la ville",
-            )}
-          </legend>
-          {list.map((i) => (
-            <label key={i.slug}>
-              <input
-                type="checkbox"
-                name="areas"
-                value={i.slug}
-                defaultChecked={areas.includes(i.slug)}
-              />
-              {i[l]}
-            </label>
-          ))}
-        </fieldset>
-      ) : (
-        <label>
-          {tr(l, "الحي (اختياري)", "Quartier (facultatif)")}
-          <select
-            key={city}
-            defaultValue={city === initial ? area : ""}
-            name="area"
-          >
-            <option value="">{tr(l, "المدينة كاملة", "Toute la ville")}</option>
-            {list.map((i) => (
+      <label>
+        {tr(l, "الجهة", "Région")}
+        <select
+          name="region"
+          value={region}
+          required
+          onChange={(e) => {
+            setRegion(e.target.value);
+            choose("");
+          }}
+        >
+          <option value="" disabled>
+            {tr(l, "اختار الجهة", "Choisissez la région")}
+          </option>
+          {items
+            .filter((i) => i.kind === "region")
+            .map((i) => (
               <option key={i.slug} value={i.slug}>
                 {i[l]}
               </option>
             ))}
-          </select>
-        </label>
-      )}
+        </select>
+      </label>
+      <label>
+        {tr(l, "المدينة", "Ville")}
+        <select
+          name="city"
+          value={city}
+          onChange={(e) => choose(e.target.value)}
+          disabled={!region}
+          required
+        >
+          <option value="" disabled>
+            {region
+              ? tr(l, "اختار المدينة", "Choisissez la ville")
+              : tr(l, "اختار الجهة أولا", "Choisissez d’abord la région")}
+          </option>
+          {cities.map((i) => (
+            <option key={i.slug} value={i.slug}>
+              {i[l]}
+            </option>
+          ))}
+        </select>
+      </label>
     </>
   );
 }
