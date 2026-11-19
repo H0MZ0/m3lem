@@ -1,7 +1,7 @@
 import { access, locale, rpc, catalog } from "@/lib/server";
 import { nameOf, tr, stateName, type Queue } from "@/lib/model";
 import { ActionForm } from "@/features/accounts/form";
-import { Editor } from "@/features/catalog/editor";
+import { CatalogManager } from "@/features/catalog/pickers";
 import { Photo } from "@/features/profiles/photo";
 import { moderate, issue, triage } from "@/features/moderation/actions";
 export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
@@ -149,17 +149,7 @@ export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
         </ActionForm>
       ))}
       <h2>{t("الحرف والمناطق", "Métiers et territoires")}</h2>
-      <div className="panel">
-        <Editor l={l} cities={items.filter((i) => i.kind === "city")} />
-        {items.map((i) => (
-          <Editor
-            key={i.slug}
-            item={i}
-            l={l}
-            cities={items.filter((i) => i.kind === "city")}
-          />
-        ))}
-      </div>
+      <CatalogManager l={l} items={items} />
     </section>
   );
 }

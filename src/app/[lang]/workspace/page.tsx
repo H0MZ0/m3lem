@@ -1,5 +1,6 @@
 import { locale, access, rpc, catalog } from "@/lib/server";
-import { tr, type Workspace, stateName } from "@/lib/model";
+import { tr, type Workspace, stateName, defaultCity } from "@/lib/model";
+import { TradeChoices } from "@/features/catalog/pickers";
 import { ActionForm } from "@/features/accounts/form";
 import { Location } from "@/features/discovery/controls";
 import { signout } from "@/features/accounts/actions";
@@ -105,31 +106,18 @@ export default async function WorkspacePage({
                 defaultValue={r?.services}
               />
             </label>
-            <fieldset>
-              <legend>
-                {t("الحرف (اختار وحدة ولا كثر)", "Métiers (un ou plusieurs)")}
-              </legend>
-              {items
-                .filter((i) => i.kind === "trade")
-                .map((i) => (
-                  <label key={i.slug}>
-                    <input
-                      type="checkbox"
-                      name="trades"
-                      value={i.slug}
-                      defaultChecked={r?.trades.includes(i.slug)}
-                    />
-                    {i[l]}
-                  </label>
-                ))}
-            </fieldset>
+            <TradeChoices
+              l={l}
+              items={items.filter((i) => i.kind === "trade")}
+              initial={items
+                .filter((i) => i.kind === "trade" && r?.trades.includes(i.slug))
+                .map((i) => i.slug)}
+            />
             <Location
               multiple
               items={items}
               l={l}
-              initial={
-                r?.city ?? items.find((i) => i.kind === "city")?.slug ?? ""
-              }
+              initial={r?.city ?? defaultCity(items, process.env.PILOT_CITY)}
               areas={r?.areas}
             />
             <label>

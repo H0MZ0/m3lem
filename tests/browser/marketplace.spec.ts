@@ -79,6 +79,7 @@ test("staff can maintain a trade alias and archive its directory without losing 
   try {
     await login(page, "staff@m3lem.example");
     await page.goto("/fr/admin");
+    await page.getByLabel("Entrée à modifier").selectOption("peinture");
     const editor = page.locator("details").filter({
       has: page.locator("summary", { hasText: "Peinture · peinture" }),
     });
@@ -94,6 +95,7 @@ test("staff can maintain a trade alias and archive its directory without losing 
       page.getByRole("link", { name: /Atelier Tine/ }),
     ).toBeVisible();
     await page.goto("/fr/admin");
+    await page.getByLabel("Entrée à modifier").selectOption("peinture");
     await editor.locator("summary").click();
     await editor.getByLabel("Actif").uncheck();
     await editor.getByRole("button", { name: "Enregistrer" }).click();
@@ -198,6 +200,11 @@ test("desktop: signup, private upload, moderation, report, review and suspension
       .getByLabel("Services proposés")
       .fill("Réparation de fuites dans le quartier.");
     await page.getByLabel("Plomberie", { exact: true }).check();
+    await page.getByLabel("Rechercher un métier").fill("nejjar");
+    await page.getByLabel("Menuiserie bois", { exact: true }).check();
+    await page.getByText("Rechercher la ville", { exact: true }).click();
+    await page.getByLabel("Nom de la ville").fill("طنجة");
+    await expect(page.locator("select[name=city]")).toHaveValue("tanger");
     await page.getByLabel("Téléphone public").fill("0600000000");
     await page.getByLabel(/J’accepte la publication/).check();
     await page
@@ -205,6 +212,7 @@ test("desktop: signup, private upload, moderation, report, review and suspension
       .click();
     await expect(page.locator("[name=image]")).toBeVisible();
     const w = (await owner.rpc("my_workspace")).data;
+    expect(w.revision.trades.sort()).toEqual(["menuiserie", "plomberie"]);
     await expect(publicPage.goto(`/fr/p/${w.id}`)).resolves.toBeTruthy();
     await expect(publicPage.getByRole("heading", { name: name })).toHaveCount(
       0,
@@ -254,7 +262,8 @@ test("desktop: signup, private upload, moderation, report, review and suspension
     await panel.locator("summary").click();
     await panel.getByRole("button", { name: "Approuver et publier" }).click();
     await expect(panel.locator("summary")).toContainText("Publié");
-    await publicPage.goto("/fr/city/casablanca/plomberie");
+    await publicPage.goto("/fr/search?city=tanger&q=nejjar");
+    await expect(publicPage).toHaveURL(/\/fr\/city\/tanger\/menuiserie$/);
     await publicPage.getByRole("link", { name }).click();
     await expect(
       publicPage.getByText("Pas encore d’avis", { exact: true }),
@@ -323,7 +332,7 @@ test("desktop: signup, private upload, moderation, report, review and suspension
     await panel.locator("[name=note]").fill("Contact à vérifier");
     await panel.getByRole("button", { name: "Suspendre" }).click();
     await expect(panel.locator("summary")).toContainText("Suspendu");
-    await publicPage.goto("/fr/city/casablanca/plomberie");
+    await publicPage.goto("/fr/city/tanger/menuiserie");
     await expect(
       publicPage.getByRole("link", { name: new RegExp(suffix) }),
     ).toHaveCount(0);

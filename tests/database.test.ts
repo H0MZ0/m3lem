@@ -39,10 +39,44 @@ test("migration, publication and permission contract on disposable Postgres", as
     for (const path of [
       "supabase/migrations/202611190001_directory.sql",
       "supabase/migrations/202611190002_media_library.sql",
-      "scripts/catalog.sql",
+      "supabase/migrations/202611190003_moroccan_cities.sql",
+      "supabase/migrations/202611190004_artisan_trades.sql",
       "scripts/demo.sql",
     ])
       await db.exec(await sql(path));
+    await t.test(
+      "national catalog is available to anonymous clients without inventing coverage",
+      async () => {
+        await role("anon");
+        const items = await one<{ slug: string; kind: string }[]>(
+          "public.catalog_items()",
+        );
+        assert.equal(items.filter((i) => i.kind === "city").length, 385);
+        assert.equal(items.filter((i) => i.kind === "trade").length, 190);
+        for (const slug of [
+          "casablanca",
+          "tanger",
+          "tamesna",
+          "dakhla",
+          "ajdir-al-hoceima",
+          "ajdir-taza",
+          "menuiserie",
+          "maconnerie",
+          "poterie",
+          "bobinage",
+        ])
+          assert.ok(
+            items.some((i) => i.slug === slug),
+            slug,
+          );
+        assert.deepEqual(
+          await one(
+            "public.find_artisans('dakhla','menuiserie','','false',1,true)",
+          ),
+          [],
+        );
+      },
+    );
     await t.test(
       "anonymous grants, demo isolation, matching and ranking",
       async () => {

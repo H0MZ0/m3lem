@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { tr, type Item, type Locale } from "@/lib/model";
+import { tr, matchesItem, type Item, type Locale } from "@/lib/model";
 export function Language({ l }: { l: Locale }) {
   const path = usePathname(),
     q = useSearchParams().toString(),
@@ -26,6 +26,7 @@ export function Location({
   area = "",
   multiple = false,
   areas = [],
+  onCityChange,
 }: {
   items: Item[];
   l: Locale;
@@ -33,28 +34,61 @@ export function Location({
   area?: string;
   multiple?: boolean;
   areas?: string[];
+  onCityChange?: (slug: string) => void;
 }) {
   const [city, setCity] = useState(initial);
+  const [query, setQuery] = useState("");
+  const cities = items
+    .filter((i) => i.kind === "city")
+    .sort((a, b) => a[l].localeCompare(b[l], l));
+  function choose(value: string) {
+    setCity(value);
+    onCityChange?.(value);
+  }
   const list = items.filter((i) => i.parent === city);
   return (
     <>
-      <label>
-        {tr(l, "فين؟ المدينة", "Où ? Ville")}
-        <select
-          name="city"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          required
-        >
-          {items
-            .filter((i) => i.kind === "city")
-            .map((i) => (
-              <option key={i.slug} value={i.slug}>
-                {i[l]}
+      <div>
+        <label>
+          {tr(l, "فين؟ المدينة", "Où ? Ville")}
+          <select
+            name="city"
+            value={city}
+            onChange={(e) => choose(e.target.value)}
+            required
+          >
+            {!city && (
+              <option value="">
+                {tr(l, "اختار المدينة", "Choisissez la ville")}
               </option>
-            ))}
-        </select>
-      </label>
+            )}
+            {cities
+              .filter((i) => matchesItem(i, query))
+              .map((i) => (
+                <option key={i.slug} value={i.slug}>
+                  {i[l]}
+                </option>
+              ))}
+          </select>
+        </label>
+        <details>
+          <summary>{tr(l, "قلّب بالاسم", "Rechercher la ville")}</summary>
+          <label>
+            {tr(l, "اسم المدينة", "Nom de la ville")}
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => {
+                const text = e.target.value;
+                setQuery(text);
+                const found = cities.filter((i) => matchesItem(i, text));
+                if (found.length === 1) choose(found[0].slug);
+                else if (!found.some((i) => i.slug === city)) choose("");
+              }}
+            />
+          </label>
+        </details>
+      </div>
       {multiple ? (
         <fieldset key={city}>
           <legend>

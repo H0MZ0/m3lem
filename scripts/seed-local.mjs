@@ -50,8 +50,9 @@ try {
         { contentType: "image/webp", upsert: true, cacheControl: "0" },
       );
       if (preview.error) throw preview.error;
-      for (const file of ["catalog.sql", "demo.sql"])
-        await tx.unsafe(await readFile(new URL(file, import.meta.url), "utf8"));
+      await tx.unsafe(
+        await readFile(new URL("demo.sql", import.meta.url), "utf8"),
+      );
       await tx`insert into directory.media select ${asset}::uuid,id from directory.profiles where demo and id='10000000-0000-4000-8000-000000000001'`;
       await tx`insert into directory.gallery select live,${asset}::uuid,1 from directory.profiles where demo and id='10000000-0000-4000-8000-000000000001'`;
     });

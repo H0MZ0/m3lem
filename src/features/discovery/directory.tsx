@@ -48,6 +48,7 @@ export function SearchBox({
   trade = "",
   area = "",
   today = false,
+  onCityChange,
 }: {
   l: Locale;
   items: Item[];
@@ -55,6 +56,7 @@ export function SearchBox({
   trade?: string;
   area?: string;
   today?: boolean;
+  onCityChange?: (slug: string) => void;
 }) {
   return (
     <form action={`/${l}/search`} className="finder">
@@ -79,7 +81,13 @@ export function SearchBox({
             ))}
         </datalist>
       </label>
-      <Location l={l} items={items} initial={city} area={area} />
+      <Location
+        l={l}
+        items={items}
+        initial={city}
+        area={area}
+        onCityChange={onCityChange}
+      />
       <label className="check">
         <input type="checkbox" name="today" value="1" defaultChecked={today} />
         {tr(l, "متاح اليوم", "Disponible aujourd’hui")}
@@ -95,15 +103,29 @@ export function Shortcuts({
   l,
   items,
   city,
+  expanded = false,
 }: {
   l: Locale;
   items: Item[];
   city: string;
+  expanded?: boolean;
 }) {
   return (
     <div className="shortcuts">
       {items
-        .filter((i) => i.kind === "trade")
+        .filter(
+          (i) =>
+            i.kind === "trade" &&
+            (expanded ||
+              [
+                "plomberie",
+                "electricite",
+                "peinture",
+                "menuiserie",
+                "maconnerie",
+                "climatisation",
+              ].includes(i.slug)),
+        )
         .map((i) => (
           <a key={i.slug} href={`/${l}/city/${city}/${i.slug}`}>
             <span className={"icon " + i.slug}>

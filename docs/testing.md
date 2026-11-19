@@ -34,6 +34,8 @@ Playwright starts the production web server if necessary. Its setup reconfirms t
 
 ## Actual run — 19 November 2026
 
+**National catalog update:** the two additional catalog migrations were applied to the running local preview without a reset. A database count returned 385 active cities/urban centres and 190 active trades. The updated suite passed **12 TAP tests and five Playwright tests**. The desktop flow now selects Tanger by typing `طنجة`, retains plumbing while filtering for `nejjar`, publishes the profile, and finds it in Tanger’s carpentry directory. Formatting, lint, strict TypeScript and the production build passed. The table below records the original pilot verification.
+
 | Command / check                                                              | Outcome                                                                                                                                        |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm ci`                                                                     | Locked dependencies installed with Node 22.16.0 / npm 11.4.2                                                                                   |

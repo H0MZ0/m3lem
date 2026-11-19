@@ -534,3 +534,8 @@ footer a {
   border-radius: inherit;
   object-fit: cover;
 }
+.trade-choices {
+  max-height: 18rem;
+  overflow: auto;
+  margin-top: 0.6rem;
+}

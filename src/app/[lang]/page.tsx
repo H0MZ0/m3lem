@@ -1,7 +1,7 @@
 import { catalog, locale } from "@/lib/server";
-import { tr } from "@/lib/model";
+import { defaultCity, tr } from "@/lib/model";
 import { seo } from "@/lib/seo";
-import { SearchBox, Shortcuts } from "@/features/discovery/directory";
+import { HomeSearch } from "@/features/discovery/home-search";
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const l = locale((await params).lang);
   return seo(
@@ -18,11 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const l = locale((await params).lang),
     items = await catalog(),
-    city =
-      items.find((i) => i.kind === "city" && i.slug === process.env.PILOT_CITY)
-        ?.slug ??
-      items.find((i) => i.kind === "city")?.slug ??
-      "";
+    city = defaultCity(items, process.env.PILOT_CITY);
   return (
     <>
       <section className="hero">
@@ -44,13 +40,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
       {city ? (
-        <>
-          <SearchBox l={l} city={city} items={items} />
-          <section>
-            <h2>{tr(l, "اختار الحرفة", "Par métier")}</h2>
-            <Shortcuts l={l} items={items} city={city} />
-          </section>
-        </>
+        <HomeSearch l={l} items={items} initial={city} />
       ) : (
         <p>
           {tr(

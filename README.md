@@ -1,6 +1,6 @@
 # معلّم · M3lem
 
-A bilingual Moroccan home-service directory. Visitors choose a trade and location, compare approved work, and call or open WhatsApp without an account. The local pilot is **Casablanca**; its three example workshops are fictional.
+A bilingual Moroccan artisan directory. Visitors can choose from **190 trades** and **385 cities and urban centres** across Morocco's 12 regions. The three fictional demo workshops are in Casablanca; other locations accept artisan registrations and display results when a profile is approved. See [national catalog scope and sources](docs/catalog.md).
 
 ## Run locally
 

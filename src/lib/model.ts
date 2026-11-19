@@ -77,6 +77,22 @@ export function resolveTrade(items: Item[], q: string) {
       ),
   )?.slug;
 }
+export function matchesItem(i: Item, query: string) {
+  const q = normalize(query);
+  return (
+    !q ||
+    [i.ar, i.fr, i.slug, ...i.aliases].some((label) =>
+      normalize(label).includes(q),
+    )
+  );
+}
+export function defaultCity(items: Item[], preferred = "casablanca") {
+  return (
+    items.find((i) => i.kind === "city" && i.slug === preferred)?.slug ??
+    items.find((i) => i.kind === "city")?.slug ??
+    ""
+  );
+}
 export function normalizePhone(input: string) {
   const s = input
     .replace(/[\u0660-\u0669]/g, (c) => String(c.charCodeAt(0) - 0x660))
