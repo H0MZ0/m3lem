@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400" role="img" aria-label="Illustration originale d’un robinet et d’une vasque">
+  <defs><pattern id="tile" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#e4e9dd"/><path d="m24 2 22 22-22 22L2 24z" fill="#ceddca"/><path d="m24 14 10 10-10 10-10-10z" fill="#a7bdac"/></pattern></defs>
+  <rect width="640" height="400" fill="url(#tile)"/><path fill="#c69b79" d="M0 284h640v116H0z"/><path fill="#845c44" d="M0 284h640v7H0z"/>
+  <path d="M225 269v-75q0-28 28-28h68q20 0 20 20v10" fill="none" stroke="#264e46" stroke-width="26"/><path d="M224 265v-68q0-24 25-24h69" fill="none" stroke="#6e9a89" stroke-width="6"/>
+  <path d="M250 156v-25m-23 0h46" stroke="#264e46" stroke-width="12" stroke-linecap="round"/>
+  <path d="M137 251h366q-18 73-90 73H229q-74 0-92-73" fill="#f7f3de" stroke="#264e46" stroke-width="6"/><ellipse cx="320" cy="250" rx="182" ry="20" fill="#cadaca" stroke="#264e46" stroke-width="6"/><path d="M342 209q-12 18 0 18t0-18" fill="#498577"/>
+</svg>

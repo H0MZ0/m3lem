@@ -1,0 +1,15 @@
+# Discovery
+
+Start at `/ar` or `/fr`. Select a city first, optionally a neighborhood, and type a trade or symptom. The home page also links straight to each active trade. Everything works with manual location selection; no geolocation prompt or installation is needed.
+
+`/[lang]/search` resolves the query against the current catalog and redirects to `/[lang]/city/[city]/[trade]` (`all` for all trades). `area`, `today=1` and `page` are optional query parameters. Unknown text produces an explicit unknown-trade state, not all artisans. Normalization uses Unicode decomposition, removes combining marks and tatweel, folds common Arabic letter variants, lowercases and collapses spaces. Matching is against whole normalized labels, slugs and staff-managed aliases, including `بلومبي`, `الماء كيسرب`, `plombier` and `تريسيان`. Keep aliases unambiguous across trades.
+
+`find_artisans` selects only visible, consenting, approved revisions in the chosen city. A neighborhood matches explicit coverage or an artisan serving the whole city. An unrecognized neighborhood does not broaden the query. Exact neighborhood coverage comes before citywide coverage, then current availability, then immutable profile ID. The API returns up to 13 rows for a 12-row page; the extra row indicates a next page. This is a live directory: new approvals or availability changes can move entries between requests.
+
+No matches in a neighborhood? The visitor can **explicitly** expand to the city, keeping trade and availability. Otherwise the search form stays available. Loading, retry and missing-profile states are in the `[lang]` route segment. Each card opens `/[lang]/p/[id]` with the selection attached; the return link reconstructs the result page. Canonical profile URLs omit those filters.
+
+Only a same-day owner confirmation yields the availability badge. Postgres compares local **calendar dates** in `Africa/Casablanca` and calculates the next local midnight using its timezone rules. The client displays the confirmation time and removes the badge at expiry, rechecking on `pageshow` and visibility changes and refreshing the results. An expired confirmation is not a negative availability claim.
+
+Cards distinguish free, fixed and unspecified visit fees. Counts/averages include approved reviews only. A profile shows services, coverage, portfolio in approved order, contact number, optional phone-confirmation badge and approved comments. `contacts()` accepts a validated Moroccan number, emits `tel:+212…` and optionally `https://wa.me/212…?text=…`, encoding a localized message with trade and location. Without WhatsApp, calling remains. No click records a job. Visitors can send photos or voice after opening WhatsApp. Reports go privately to staff.
+
+**Verify:** try `الماء كيسرب` in Maârif with the today filter, switch to French, open the result, and return. Search painting in Sidi Maârouf, then expand. The local sample contact buttons are deliberately inert. Code: `src/features/discovery`, `src/lib/model.ts`, `src/app/[lang]/search`, `city` and `p`.

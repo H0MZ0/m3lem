@@ -1,0 +1,21 @@
+# Deploy and operate
+
+Production deployment and account provisioning are separate operator actions. This repository contains a local release, not a configured production service.
+
+1. Use independent Supabase projects for development, staging and production. Take a database backup and retain a matching Storage backup. Apply migrations in order with a reviewed `supabase db push` against the intended linked project. Do not run local resets or demo seeding on a hosted project.
+2. Keep only the intended API schemas exposed; never expose `directory`. Confirm the `portfolio` bucket is private with no permissive `storage.objects` policy. Verify service keys are only in server environment variables. A previously public bucket or CDN policy can defeat image revocation.
+3. Set the target `NEXT_PUBLIC_*` values **before building**, server-only service credential and exact HTTPS `SITE_URL`. Unset `LOCAL_DEMO` and omit `LOCAL_DATABASE_URL` in production. Configure `PILOT_CITY`. Use a Node runtime supporting Sharp and a request body limit sufficient for the 6 MB action envelope.
+4. Configure Auth site URL and allowlist the exact `/auth/callback` redirect for this origin, including supported locale query strings. Set up transactional email/SMTP and test signup confirmation in the originating browser. Require email confirmation outside local development; test delivery, rate limits and sender configuration with your provider.
+5. Bootstrap staff in the SQL console. Populate the real catalog in the admin UI or review/apply `scripts/catalog.sql` (taxonomy only). Onboard consenting **real** artisans through the workspace and independent review. The directory remains empty until real coverage exists.
+6. Build with `npm ci && npm run build`; run `npm start` or use a compatible Next Node deployment. Terminate TLS at a trusted ingress. Overwrite `TRUSTED_CLIENT_IP_HEADER`’s chosen header there; disallow direct ingress that can spoof it. Keep dynamic HTML, cookies, action responses and `/media/*` out of shared caches. Redact review token paths and auth query parameters from access logs and APM.
+7. Check logged-out search/profile visibility, unsupported areas, real contact links with owner consent, private preview denial, approval and suspension. Inspect `/robots.txt`, `/sitemap.xml` and HTML metadata. Non-demo published profiles and matching city/trade combinations have localized canonical and alternate links; empty/filtered and private pages are noindex. Staging should additionally require access or send a global `X-Robots-Tag: noindex`. Robots is not access control.
+
+### Routine maintenance
+
+- Review pending profiles, phone changes, reports, review evidence and flagged comments. Scope staff access and audit `directory.history`. Establish retention periods for evidence and reports; preserve referential integrity when deleting accounts. Reassign or retain relevant staff evidence before deleting an issuing staff identity.
+- Remove old hourly quota keys (`directory.limits` with `bucket` older than your retention cutoff) and unused expired invitations according to your evidence policy. Never delete the invitation of a retained review. Rate limits and Auth limits are independent.
+- On storage interruptions, retry with a new asset; reconcile orphan objects after a grace period. Compare `{id}.webp` and `{id}.small.webp` in the bucket to `directory.media.id`. Recheck references immediately before deletion, and use the Storage API rather than deleting Storage metadata in SQL. Database authorization is removed before best-effort object cleanup.
+- Keep PostgreSQL and client timezone data current. Test transitions in `Africa/Casablanca` including Ramadan. If a direct contact breaks, triage the report, suspend if necessary and re-confirm the corrected number.
+- For rollback, revert the web build only while its RPC contract is compatible. Prefer an additive forward database fix. For destructive recovery, stop writes and restore database **and matching Storage objects** from a tested backup; do not rewind the database alone after token consumption or moderation. Review active invitations and sessions after recovery.
+
+See [testing](testing.md) for the actual local checks and remaining deployment-specific checks.
