@@ -578,3 +578,33 @@ footer a {
   border-bottom: 3px solid var(--green);
   text-decoration: none;
 }
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.request-card header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 1rem;
+}
+.request-card header small,
+.request-meta {
+  color: #455c4d;
+}
+.request-photos {
+  margin-block: 0.5rem;
+}
+.request-photos .photo {
+  max-height: 220px;
+}
+.request-cta {
+  margin-top: 1.5rem;
+}
+.request-cta .button {
+  display: inline-block;
+}

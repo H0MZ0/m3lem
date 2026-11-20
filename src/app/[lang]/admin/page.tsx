@@ -1,18 +1,29 @@
+import Image from "next/image";
 import { access, locale, rpc, catalog } from "@/lib/server";
-import { nameOf, tr, stateName, type Queue } from "@/lib/model";
+import {
+  nameOf,
+  tr,
+  stateName,
+  type Queue,
+  type RequestQueueItem,
+  type RequestSummary,
+} from "@/lib/model";
 import { ActionForm } from "@/features/accounts/form";
 import { CatalogManager } from "@/features/catalog/pickers";
 import { Photo } from "@/features/profiles/photo";
 import { RevisionDiff } from "@/features/moderation/revision-diff";
 import type { Summary } from "@/features/discovery/metrics";
 import { moderate, issue, triage } from "@/features/moderation/actions";
+import { triageRequest } from "@/features/requests/actions";
 export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
   const l = locale((await params).lang);
   await access(l, true);
-  const [q, items, stats] = await Promise.all([
+  const [q, items, stats, requests, requestStats] = await Promise.all([
       rpc<Queue>("staff_queue"),
       catalog(true),
       rpc<Summary>("discovery_summary"),
+      rpc<RequestQueueItem[]>("request_queue"),
+      rpc<RequestSummary>("request_summary"),
     ]),
     t = (a: string, b: string) => tr(l, a, b);
   const panel = (p: Queue["profiles"][number]) => {
@@ -140,6 +151,75 @@ export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
           </button>
         </ActionForm>
       ))}
+      <h2>
+        {t("طلبات الخدمة", "Demandes de service")} · {requestStats.open}
+      </h2>
+      {!requests.length && (
+        <p>{t("ما كاين حتى طلب مفتوح.", "Aucune demande ouverte.")}</p>
+      )}
+      {requests.map((r) => (
+        <details className="panel" key={r.id}>
+          <summary>
+            {r.name} · {nameOf(items, r.trade, l)} · {nameOf(items, r.city, l)}{" "}
+            · <bdi>{r.ref}</bdi>
+            {r.expired ? " · " + t("سالا", "Expirée") : ""}
+          </summary>
+          <p>{r.description}</p>
+          <p>
+            <bdi>{r.phone}</bdi> ·{" "}
+            {new Date(r.created_at).toLocaleString("fr-MA", {
+              timeZone: "Africa/Casablanca",
+            })}
+          </p>
+          {!!r.photos.length && (
+            <div className="gallery request-photos">
+              {r.photos.map((id, i) => (
+                <Image
+                  key={id}
+                  unoptimized
+                  width={480}
+                  height={320}
+                  className="photo"
+                  src={`/request-media/${id}`}
+                  alt={t(
+                    `تصويرة من الطلب · ${i + 1}`,
+                    `Photo de la demande · ${i + 1}`,
+                  )}
+                />
+              ))}
+            </div>
+          )}
+          <p>
+            {t("تسجيلات التواصل", "Contacts enregistrés")} :{" "}
+            <b>{r.responses}</b>
+          </p>
+          {!!r.responders.length && (
+            <ul>
+              {r.responders.map((x, i) => (
+                <li key={i}>
+                  {x.name} ·{" "}
+                  {new Date(x.at).toLocaleString("fr-MA", {
+                    timeZone: "Africa/Casablanca",
+                  })}
+                </li>
+              ))}
+            </ul>
+          )}
+          <ActionForm
+            action={triageRequest.bind(null, l, r.id)}
+            className="stack"
+          >
+            <div className="buttons">
+              <button name="decision" value="close">
+                {t("سد الطلب", "Clore la demande")}
+              </button>
+              <button className="danger" name="decision" value="remove">
+                {t("حيّد الطلب والتصاور", "Retirer la demande et les photos")}
+              </button>
+            </div>
+          </ActionForm>
+        </details>
+      ))}
       <h2>{t("الآراء للمراجعة", "Avis à modérer")}</h2>
       {!q.reviews.length && (
         <p>{t("ما كاين حتى رأي جديد.", "Aucun avis en attente.")}</p>
@@ -184,6 +264,20 @@ export default async function Admin({ params }: PageProps<"/[lang]/admin">) {
         <p>
           {t("ضغطات الاتصال", "Clics appel")} : {stats.calls} · WhatsApp :{" "}
           {stats.whatsapp}
+        </p>
+        <p>
+          {t("طلبات آخر 30 يوم", "Demandes sur 30 jours")} :{" "}
+          {requestStats.last30} ·{" "}
+          {t("تواصل عليها حرفي", "Avec au moins un contact")} :{" "}
+          {requestStats.responded} ·{" "}
+          {t("مجموع التسجيلات", "Contacts enregistrés")} :{" "}
+          {requestStats.responses}
+        </p>
+        <p>
+          {t("متوسط الوقت لأول تسجيل", "Délai moyen du premier contact")} :{" "}
+          {requestStats.avg_minutes === null
+            ? "—"
+            : `${requestStats.avg_minutes} ${t("دقيقة", "min")}`}
         </p>
         <small>
           {t(

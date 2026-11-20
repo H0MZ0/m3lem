@@ -90,6 +90,22 @@ export default async function Page({ params, searchParams }: Props) {
           />
         ))}
       </div>
+      {!!rows.length && (
+        <p>
+          <a
+            href={
+              `/${l}/request` +
+              qs({ trade: trade === "all" ? "" : trade, city })
+            }
+          >
+            {tr(
+              l,
+              "ما لقيتيش اللي بغيتي؟ صيفط طلب خدمة",
+              "Vous ne trouvez pas ? Envoyez une demande",
+            )}
+          </a>
+        </p>
+      )}
       {!rows.length && (
         <div className="panel">
           <p>
@@ -157,6 +173,15 @@ export default async function Page({ params, searchParams }: Props) {
               {tr(l, "اختار مدينة أخرى", "Choisir une autre ville")}
             </a>
           )}
+          <a
+            className="button"
+            href={
+              `/${l}/request` +
+              qs({ trade: trade === "all" ? "" : trade, city })
+            }
+          >
+            {tr(l, "صيفط طلب خدمة", "Envoyer une demande")}
+          </a>
         </div>
       )}
       <nav className="pager">

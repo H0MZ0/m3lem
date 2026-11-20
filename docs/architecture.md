@@ -2,14 +2,15 @@
 
 One Next.js App Router deployment owns the HTML, forms, media gateway and email callback. Supabase supplies Auth, Postgres/PostgREST and a private Storage bucket. There is no visitor identity, job or booking created by a search or contact click.
 
-| Boundary     | Sources                                                              | Responsibility                                                               |
-| ------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Discovery    | `src/features/discovery`, `src/app/[lang]/city`, `search`, `p`       | GET search, stable directories, cards, profiles, filter preservation, expiry |
-| Accounts     | `src/features/accounts`, `src/proxy.ts`, `src/app/auth/callback`     | Email auth, cookie refresh, action feedback and session termination          |
-| Profiles     | `src/features/profiles`, `src/app/[lang]/workspace`, `src/app/media` | Owner revision, image pipeline, library and daily availability               |
-| Catalog      | `src/features/catalog`, `catalog_items` / `manage_catalog` RPCs      | Stable taxonomy and aliases                                                  |
-| Moderation   | `src/features/moderation`, `src/app/[lang]/admin`, `review`          | Staff decisions, evidence, anonymous submissions                             |
-| Shared rules | `src/lib/model.ts`, `supabase/migrations`                            | Locale-aware formatting, normalized contacts and transactional invariants    |
+| Boundary     | Sources                                                                    | Responsibility                                                                 |
+| ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Discovery    | `src/features/discovery`, `src/app/[lang]/city`, `search`, `p`             | GET search, stable directories, cards, profiles, filter preservation, expiry   |
+| Accounts     | `src/features/accounts`, `src/proxy.ts`, `src/app/auth/callback`           | Email auth, cookie refresh, action feedback and session termination            |
+| Profiles     | `src/features/profiles`, `src/app/[lang]/workspace`, `src/app/media`       | Owner revision, image pipeline, library and daily availability                 |
+| Requests     | `src/features/requests`, `src/app/[lang]/request`, `src/app/request-media` | Anonymous intake, private photos, token status, artisan inbox and staff triage |
+| Catalog      | `src/features/catalog`, `catalog_items` / `manage_catalog` RPCs            | Stable taxonomy and aliases                                                    |
+| Moderation   | `src/features/moderation`, `src/app/[lang]/admin`, `review`                | Staff decisions, evidence, anonymous submissions                               |
+| Shared rules | `src/lib/model.ts`, `supabase/migrations`                                  | Locale-aware formatting, normalized contacts and transactional invariants      |
 
 Request → locale route → per-request Supabase SSR client → explicitly granted RPC → projection over private tables. Server Components produce the initial directory, profile and dashboard HTML. Client islands handle dependent selects, language switching, action pending/feedback and availability timers. Forms changing state use same-origin Next Server Actions. Access checks run inside each protected action; the DB independently checks `auth.uid()` against ownership or the operator-managed staff list.
 

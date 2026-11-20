@@ -66,6 +66,19 @@ export default async function Home({
           )}
         </p>
       )}
+      <section className="panel request-cta">
+        <h2>{tr(l, "ما لقيتيش اللي بغيتي؟", "Vous ne trouvez pas ?")}</h2>
+        <p>
+          {tr(
+            l,
+            "صيفط طلب خدمة بلا حساب. وصف المشكل، زيد تصاور، والحرفيين المطابقين فمدينتك غادي يشوفوه.",
+            "Envoyez une demande sans compte. Décrivez le problème, ajoutez des photos et les artisans correspondants de votre ville la verront.",
+          )}
+        </p>
+        <a className="button" href={`/${l}/request`}>
+          {tr(l, "صيفط طلب خدمة", "Envoyer une demande")}
+        </a>
+      </section>
     </>
   );
 }

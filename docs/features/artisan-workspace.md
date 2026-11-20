@@ -6,9 +6,11 @@ Save a draft to create the profile and unlock uploads. Submit for review when re
 
 On a live profile, confirm availability for today or remove it. This operation does not create a new revision or require a moderator. Yesterday's confirmation cannot advertise today. The last confirmation timestamp in the workspace is informational.
 
+A published artisan also gets a **Demandes** tab. It lists open, unexpired requests whose city and trade match the live revision, with the customer's description, photos, name and phone. **Appeler** and **WhatsApp** open directly with a localized prefilled message. **J’ai contacté** records that the artisan acted; the request stays open for other matching artisans and the customer sees only the number of recorded contacts. There is no claim, booking, payment or guaranteed reply. New requests appear when the artisan opens the workspace; no push or email notification is sent.
+
 ### Gallery
 
-The workspace has three destinations: **Aujourd’hui** (publication state, availability, link to the public fiche), **Ma fiche** (services and contact details) and **Mes photos** (import, order and submit photos). New accounts open on the profile form. A failed profile save preserves the entered values and identifies invalid phone/fee/contact fields. Both profile and photo edits use the same optimistic revision check. Saving one preserves the other’s last saved content; switching sections is navigation, not autosave.
+The workspace has four destinations: **Aujourd’hui** (publication state, availability, link to the public fiche), **Demandes** (matching service requests), **Ma fiche** (services and contact details) and **Mes photos** (import, order and submit photos). New accounts open on the profile form. A failed profile save preserves the entered values and identifies invalid phone/fee/contact fields. Both profile and photo edits use the same optimistic revision check. Saving one preserves the other’s last saved content; switching sections is navigation, not autosave.
 
 Upload one JPEG, PNG or WebP at a time, at most 5 MiB and 24 megapixels, static images only. The server checks both declared type and decoded format. Sharp applies orientation, strips metadata and writes WebP renditions bounded to 1280 and 480 pixels. The bucket is private. Max 24 library assets and eight selected photos per revision. Choose photos, give them distinct ranks from 1 to 8 and save or submit. Approval covers the selected images in their reviewed order.
 

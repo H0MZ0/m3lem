@@ -15,6 +15,9 @@ erDiagram
   REVISIONS ||--o{ GALLERY : ordered
   MEDIA ||--o{ GALLERY : attached
   PROFILES ||--o{ REPORTS : about
+  REQUESTS ||--o{ REQUEST_PHOTOS : private_photos
+  REQUESTS ||--o{ REQUEST_RESPONSES : artisan_contacts
+  PROFILES ||--o{ REQUEST_RESPONSES : recorded_by
   PROFILES ||--o{ INVITATIONS : scoped
   INVITATIONS ||--o| REVIEWS : consumed
   AUTH_USERS ||--o{ HISTORY : action
@@ -23,6 +26,8 @@ erDiagram
 `directory` is a non-exposed schema. `profiles.id` is public; `owner_id` is private, unique and distinct from the public ID. Composite foreign keys prevent pointing at another profile’s revision. A city has a region parent; a revision stores a city, not a redundant region. Catalog writes validate the parent kind. Historical neighborhood relationships are retained privately but are no longer used for discovery or exposed in projections.
 
 `fee IS NULL` = not specified, `0` = free; a positive integer is a fixed visit fee in MAD. Phone and consent belong to the revision. `available_at`, staff-checked phone and verification time belong to the profile, separate from editable data. `gallery` enforces unique rank 1–8 and no duplicate asset per revision. `media.id` determines both Storage object names. `limits` holds hourly counters under keyed hashes. Reports, job evidence and staff history never enter a public projection.
+
+`requests` stores an anonymous job with a hashed bearer token, a short public reference, a validated trade/city pair, consent, state and a 14-day expiry. `request_photos` names private WebP objects in the `request-media` bucket; `request_responses` records which matching artisan registered a contact. Neither table has a client policy. Projections are function-only: the customer sees status and counts, a matching artisan sees open local requests and the phone needed to reply, and staff see the full queue and triage it. No raw email, customer account, artisan owner ID or response identity enters the customer projection.
 
 ### Transitions
 

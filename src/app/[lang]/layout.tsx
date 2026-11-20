@@ -49,8 +49,8 @@ export default async function Layout({
               <aside className="demo">
                 {tr(
                   l,
-                  "نسخة تجريبية محلية · البروفايلات خيالية والتواصل مطفّي.",
-                  "Démo locale · Profils fictifs et contacts désactivés.",
+                  "نسخة تجريبية محلية · البروفايلات خيالية والتواصل معاهم مطفّي.",
+                  "Démo locale · Profils fictifs et contacts de démo désactivés.",
                 )}
               </aside>
             )}
@@ -58,6 +58,9 @@ export default async function Layout({
           </main>
           <footer className="wrap">
             <span>معلّم · M3LEM</span>
+            <a href={`/${l}/request`}>
+              {tr(l, "طلب خدمة", "Demander un service")}
+            </a>
             <a href={`/${l}/admin`}>{tr(l, "الإدارة", "Administration")}</a>
           </footer>
         </DraftProvider>

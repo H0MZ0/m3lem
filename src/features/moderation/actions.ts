@@ -1,22 +1,11 @@
 "use server";
-import { createHash, createHmac, randomBytes } from "node:crypto";
-import { headers } from "next/headers";
+import { createHash, randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { access, locale, rpc, site } from "@/lib/server";
+import { budget } from "@/lib/quota";
 import { done, fail, val, type Outcome } from "@/lib/forms";
 import { tr, uuid } from "@/lib/model";
 const hash = (s: string) => createHash("sha256").update(s).digest("hex");
-async function budget(scope: string, max: number) {
-  const h = process.env.TRUSTED_CLIENT_IP_HEADER;
-  const ip = (h && (await headers()).get(h)) || "shared";
-  const client_key = createHmac(
-    "sha256",
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
-    .update(scope + ":" + ip)
-    .digest("hex");
-  return rpc<boolean>("take_quota", { client_key, max_hits: max }, true);
-}
 export async function report(
   lang: string,
   id: string,

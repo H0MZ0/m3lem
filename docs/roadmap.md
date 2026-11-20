@@ -1,5 +1,7 @@
 # Deferred work
 
+Anonymous **service requests with photos**, a matching artisan inbox and staff request triage are implemented; see [service requests](features/service-requests.md). Requests deliberately stop before conversation, offer/bidding, booking or payment.
+
 | Future feature              | Prerequisite before adding a live control                                                                        |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | In-app chat or voice intake | Consent, media limits, moderation, retention and delivery support                                                |

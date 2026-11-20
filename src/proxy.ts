@@ -23,5 +23,10 @@ export async function proxy(req: NextRequest) {
   return res;
 }
 export const config = {
-  matcher: ["/ar/:path*", "/fr/:path*", "/media/:path*"],
+  matcher: [
+    "/ar/:path*",
+    "/fr/:path*",
+    "/media/:path*",
+    "/request-media/:path*",
+  ],
 };

@@ -2,7 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
-import type { Card, Workspace, Detail } from "../src/lib/model";
+import type {
+  Card,
+  Workspace,
+  Detail,
+  ServiceRequest,
+  RequestQueueItem,
+  RequestStatus,
+} from "../src/lib/model";
 test("migration, publication and permission contract on disposable Postgres", async (t) => {
   const db = new PGlite();
   const sql = (p: string) => readFile(p, "utf8");
@@ -43,6 +50,7 @@ test("migration, publication and permission contract on disposable Postgres", as
       "supabase/migrations/202611190005_regions.sql",
       "supabase/migrations/202611190006_city_discovery.sql",
       "supabase/migrations/202611190007_marketplace_workflows.sql",
+      "supabase/migrations/202611200001_service_requests.sql",
       "scripts/demo.sql",
     ])
       await db.exec(await sql(path));
@@ -289,6 +297,141 @@ test("migration, publication and permission contract on disposable Postgres", as
         await assert.rejects(
           one("public.consume_invite($1,5,'Expired link')", ["ef".repeat(32)]),
         );
+      },
+    );
+    await t.test(
+      "service requests are token-scoped, match only local trades, and record contact",
+      async () => {
+        const reqHash = "ab".repeat(32),
+          reqAsset = "30000000-0000-4000-8000-000000000002",
+          ref = "REQ0000001";
+        await role("service_role");
+        const created = await one<{ id: string; ref: string }>(
+          "public.create_request($1,$2,$3::uuid[])",
+          [
+            {
+              ref,
+              trade: "plomberie",
+              city: "casablanca",
+              name: "Client test",
+              phone: "+212611111111",
+              description: "تسرب تحت الحوض فالمطبخ",
+              consent: true,
+            },
+            reqHash,
+            [reqAsset],
+          ],
+        );
+        assert.equal(created.ref, ref);
+        await role("anon");
+        const status = (await one<RequestStatus>("public.request_status($1)", [
+          reqHash,
+        ]))!;
+        assert.equal(status.state, "open");
+        assert.equal(status.responses, 0);
+        assert.deepEqual(status.photos, [reqAsset]);
+        assert.equal(
+          await one("public.can_read_request_photo($1,'')", [reqAsset]),
+          false,
+        );
+        assert.equal(
+          await one("public.can_read_request_photo($1,$2)", [
+            reqAsset,
+            reqHash,
+          ]),
+          true,
+        );
+        await assert.rejects(
+          db.query("select * from directory.requests"),
+          /permission denied/,
+        );
+        await assert.rejects(one("public.my_requests()"), /permission denied/);
+        await role("authenticated", 2);
+        const mine = await one<ServiceRequest[]>("public.my_requests()");
+        assert.equal(mine.length, 1);
+        assert.equal(mine[0].phone, "+212611111111");
+        assert.equal(mine[0].responded, false);
+        assert.deepEqual(mine[0].photos, [reqAsset]);
+        assert.equal(
+          await one("public.can_read_request_photo($1)", [reqAsset]),
+          true,
+        );
+        await one("public.respond_request($1)", [created.id]);
+        assert.equal(
+          (await one<ServiceRequest[]>("public.my_requests()"))[0].responded,
+          true,
+        );
+        await role("authenticated", 3);
+        assert.deepEqual(await one("public.my_requests()"), []);
+        assert.equal(
+          await one("public.can_read_request_photo($1)", [reqAsset]),
+          false,
+        );
+        await role("authenticated", 4);
+        const queue = await one<RequestQueueItem[]>("public.request_queue()");
+        assert.equal(queue.length, 1);
+        assert.equal(queue[0].responses, 1);
+        assert.match(queue[0].responders[0].name, /نحاس/);
+        const summary = await one<{
+          open: number;
+          last30: number;
+          responded: number;
+          responses: number;
+          avg_minutes: number | null;
+        }>("public.request_summary()");
+        assert.ok(summary.open >= 1);
+        assert.ok(summary.last30 >= 1);
+        assert.ok(summary.responded >= 1);
+        assert.ok(summary.responses >= 1);
+        assert.ok(summary.avg_minutes !== null);
+        assert.deepEqual(
+          await one("public.triage_request($1,'close')", [created.id]),
+          [reqAsset],
+        );
+        await role("anon");
+        assert.equal(
+          (await one<RequestStatus>("public.request_status($1)", [reqHash]))!
+            .state,
+          "closed",
+        );
+        await role("authenticated", 2);
+        assert.deepEqual(await one("public.my_requests()"), []);
+
+        await role("service_role");
+        const expired = await one<{ id: string }>(
+          "public.create_request($1,$2,$3::uuid[])",
+          [
+            {
+              ref: "REQ0000002",
+              trade: "plomberie",
+              city: "casablanca",
+              name: "Client expiré",
+              phone: "+212622222222",
+              description: "طلب قديم للاختبار",
+              consent: true,
+            },
+            "ef".repeat(32),
+            [],
+          ],
+        );
+        await db.exec(
+          `reset role;update directory.requests set expires_at=now()-interval '1 minute' where id='${expired.id}'`,
+        );
+        await role("anon");
+        assert.equal(
+          (await one<RequestStatus>("public.request_status($1)", [
+            "ef".repeat(32),
+          ]))!.state,
+          "expired",
+        );
+        await role("authenticated", 2);
+        assert.deepEqual(await one("public.my_requests()"), []);
+        await assert.rejects(
+          one("public.respond_request($1)", [expired.id]),
+          /request/,
+        );
+        await role("authenticated", 4);
+        await one("public.triage_request($1,'close')", [expired.id]);
       },
     );
     await t.test(

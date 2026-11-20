@@ -1,10 +1,19 @@
+import Image from "next/image";
 import { locale, access, rpc, catalog } from "@/lib/server";
-import { tr, type Workspace, stateName } from "@/lib/model";
+import {
+  tr,
+  nameOf,
+  requestContacts,
+  type ServiceRequest,
+  type Workspace,
+  stateName,
+} from "@/lib/model";
 import { TradeChoices } from "@/features/catalog/pickers";
 import { ActionForm } from "@/features/accounts/form";
 import { Location } from "@/features/discovery/controls";
 import { signout } from "@/features/accounts/actions";
 import { Photo } from "@/features/profiles/photo";
+import { respond } from "@/features/requests/actions";
 import {
   save,
   availability,
@@ -18,15 +27,19 @@ export default async function WorkspacePage({
 }: PageProps<"/[lang]/workspace">) {
   const l = locale((await params).lang);
   await access(l);
-  const [w, items, staff] = await Promise.all([
+  const [w, items, staff, requests] = await Promise.all([
       rpc<Workspace | null>("my_workspace"),
       catalog(),
       rpc<boolean>("is_staff"),
+      rpc<ServiceRequest[]>("my_requests"),
     ]),
     r = w?.revision,
     requested = (await searchParams).tab,
     tab =
-      requested === "photos" || requested === "profile" || requested === "today"
+      requested === "photos" ||
+      requested === "profile" ||
+      requested === "today" ||
+      requested === "requests"
         ? requested
         : w
           ? "today"
@@ -43,6 +56,11 @@ export default async function WorkspacePage({
       <nav className="tabs" aria-label={t("فضاء المعلّم", "Espace artisan")}>
         {[
           ["today", t("اليوم", "Aujourd’hui")],
+          [
+            "requests",
+            t("الطلبات", "Demandes") +
+              (requests.length ? ` (${requests.length})` : ""),
+          ],
           ["profile", t("البروفايل", "Ma fiche")],
           ["photos", t("صور خدمتي", "Mes photos")],
         ].map(([id, text]) => (
@@ -112,6 +130,104 @@ export default async function WorkspacePage({
             </button>
           </div>
         </ActionForm>
+      )}
+      {tab === "requests" && (
+        <section>
+          <h2>{t("طلبات الخدمة المطابقة", "Demandes correspondantes")}</h2>
+          {!w?.published ? (
+            <p>
+              {t(
+                "باش تشوف الطلبات، خاص البروفايل ديالك يكون منشور.",
+                "Publiez votre fiche pour voir les demandes.",
+              )}{" "}
+              <a href={`/${l}/workspace?tab=profile`}>
+                {t("كمّل البروفايل", "Compléter ma fiche")}
+              </a>
+            </p>
+          ) : requests.length ? (
+            requests.map((req) => {
+              const links = requestContacts(
+                req.phone,
+                l,
+                r?.name ?? "",
+                nameOf(items, req.trade, l),
+                nameOf(items, req.city, l),
+                req.ref,
+              );
+              return (
+                <article className="panel request-card" key={req.id}>
+                  <header>
+                    <strong>{nameOf(items, req.trade, l)}</strong> ·{" "}
+                    {nameOf(items, req.city, l)}
+                    <small>
+                      <bdi>{req.ref}</bdi> ·{" "}
+                      {new Date(req.created_at).toLocaleString("fr-MA", {
+                        timeZone: "Africa/Casablanca",
+                      })}
+                    </small>
+                  </header>
+                  <p>{req.description}</p>
+                  {!!req.photos.length && (
+                    <div className="gallery request-photos">
+                      {req.photos.map((id, i) => (
+                        <Image
+                          key={id}
+                          unoptimized
+                          width={480}
+                          height={320}
+                          className="photo"
+                          src={`/request-media/${id}`}
+                          alt={t(
+                            `تصويرة من الطلب · ${i + 1}`,
+                            `Photo de la demande · ${i + 1}`,
+                          )}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <p className="request-meta">
+                    {t("الزبون", "Client")} : {req.name} ·{" "}
+                    <bdi>{req.phone}</bdi>
+                  </p>
+                  {links && (
+                    <div className="contact">
+                      <a className="button" href={links.tel}>
+                        {t("عيّط", "Appeler")}
+                      </a>
+                      <a className="button alt" href={links.wa}>
+                        {t("واتساب", "WhatsApp")}
+                      </a>
+                    </div>
+                  )}
+                  <ActionForm action={respond.bind(null, l, req.id)}>
+                    {req.responded ? (
+                      <p className="notice">
+                        {t("سجلتي التواصل", "Contact enregistré")}
+                      </p>
+                    ) : (
+                      <button className="alt">
+                        {t("تم التواصل", "J’ai contacté")}
+                      </button>
+                    )}
+                  </ActionForm>
+                  <small>
+                    {t(
+                      "«تم التواصل» كيسجل بلي شفت الطلب وعيّطتي. ما كيضمنش أن الزبون جاوب.",
+                      "« J’ai contacté » enregistre votre démarche. Cela ne garantit pas la réponse du client.",
+                    )}
+                  </small>
+                </article>
+              );
+            })
+          ) : (
+            <p>
+              {t(
+                "ما كاين حتى طلب مطابق دابا. الطلبات اللي فمدينتك وفالحرف اللي مسجل فيهم غادي يبانو هنا.",
+                "Aucune demande correspondante pour le moment. Les demandes de votre ville et de vos métiers apparaîtront ici.",
+              )}
+            </p>
+          )}
+        </section>
       )}
       {w?.state !== "suspended" && (
         <>

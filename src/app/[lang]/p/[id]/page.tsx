@@ -86,6 +86,14 @@ export default async function Profile({ params, searchParams }: Props) {
             "Contacter ne réserve pas une intervention. Photos et notes vocales peuvent être envoyées sur WhatsApp.",
           )}
         </small>
+        <p>
+          <a href={`/${l}/request?trade=${p.trades[0]}&city=${p.city}`}>
+            {t(
+              "بغيتي طلب مكتوب؟ صيفط طلب خدمة",
+              "Vous préférez une demande écrite ? Envoyer une demande",
+            )}
+          </a>
+        </p>
       </div>
       {p.gallery.length > 1 && (
         <section>

@@ -8,7 +8,7 @@ Expand **Nouvelle entrée**. Enter a globally unique, stable ASCII slug, bilingu
 
 ### Listings, confirmation and reports
 
-Pending listings come first, followed by reports, pending reviews, other listings and catalog maintenance. When editing a live listing, the queue compares the working revision to its approved snapshot. Staff see old/new values for changed fields, including phone, consent and photo order. An invitation displays the name on the published listing; an expired or consumed link no longer presents a rating form.
+Pending listings come first, followed by reports, service requests, pending reviews, other listings and catalog maintenance. The request panel shows the customer's description, phone, private photos, expiry and which matching artisans registered a contact. Staff can close a request or remove it with its photos. The 30-day metrics include request volume, requests with at least one recorded contact, total contact records and mean time to first contact. When editing a live listing, the queue compares the working revision to its approved snapshot. Staff see old/new values for changed fields, including phone, consent and photo order. An invitation displays the name on the published listing; an expired or consumed link no longer presents a rating form.
 
 Open a pending fiche and inspect its contact consent, services, coverage, fee and **every selected photo**. Approve to replace the live snapshot, or enter an actionable reason and request corrections. Suspend for a serious problem, recording the reason; this immediately hides the listing and prevents public image access. Return a suspended profile for corrections before a new review. A revision ID travels with each decision; a stale review must reload.
 

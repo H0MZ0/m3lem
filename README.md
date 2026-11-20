@@ -1,6 +1,6 @@
 # معلّم · M3lem
 
-A bilingual Moroccan artisan directory. Visitors can choose from **190 trades** and **385 cities and urban centres** across Morocco's 12 regions. The three fictional demo workshops are in Casablanca; other locations accept artisan registrations and display results when a profile is approved. See [national catalog scope and sources](docs/catalog.md).
+A bilingual Moroccan artisan directory. Visitors can choose from **190 trades** and **385 cities and urban centres** across Morocco's 12 regions, or send a no-account **service request with up to three photos** from `/[lang]/request`; matching published artisans find it in their workspace inbox. The three fictional demo workshops are in Casablanca; other locations accept artisan registrations and display results when a profile is approved. See [national catalog scope and sources](docs/catalog.md) and [service requests](docs/features/service-requests.md).
 
 ## Run locally
 
@@ -21,7 +21,7 @@ npm run seed:local
 npm run dev
 ```
 
-Visit **http://localhost:3000** for Darija, `/fr` for French, `/fr/workspace` for the artisan workspace, or `/fr/admin` for staff. `supabase stop` stops the local services. Local email confirmation is disabled; production email configuration is separate.
+Visit **http://localhost:3000** for Darija, `/fr` for French, `/fr/request` for a no-account service request, `/fr/workspace` for the artisan workspace, or `/fr/admin` for staff. `supabase stop` stops the local services. Local email confirmation is disabled; production email configuration is separate.
 
 Try `الما كيسرب` in Casablanca. On mobile the first results are visible above the collapsed search controls' expanded content. To test **Mot de passe oublié**, open the local inbox at **http://127.0.0.1:54324** and follow the email in the same browser. Use a new local account rather than changing a shared demo password.
 
@@ -63,6 +63,6 @@ The seed command also checks the database URL and refuses to run against a popul
 ## Documentation
 
 - [Architecture and mobile integration](docs/architecture.md) · [Database model](docs/database.md) · [Auth and permissions](docs/auth-and-permissions.md)
-- [Discovery and contact](docs/features/discovery.md) · [Artisan workspace](docs/features/artisan-workspace.md) · [Administration and reviews](docs/features/admin-and-reviews.md)
+- [Discovery and contact](docs/features/discovery.md) · [Service requests](docs/features/service-requests.md) · [Artisan workspace](docs/features/artisan-workspace.md) · [Administration and reviews](docs/features/admin-and-reviews.md)
 - [Localization and accessibility](docs/ui-localization-accessibility.md) · [Deployment and operations](docs/deploy-and-operate.md)
 - [Verification record](docs/testing.md) · [Roadmap](docs/roadmap.md) · [Implementation plan](docs/implementation-plan.md)

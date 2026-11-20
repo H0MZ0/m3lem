@@ -31,6 +31,43 @@ export type Card = Omit<Revision, "consent" | "phone"> & {
   average: number | null;
 };
 export type Detail = Card & { reviews: { rating: number; comment: string }[] };
+export type ServiceRequest = {
+  id: string;
+  ref: string;
+  trade: string;
+  city: string;
+  name: string;
+  phone: string;
+  description: string;
+  created_at: string;
+  expires_at: string;
+  photos: string[];
+  responses: number;
+  responded: boolean;
+};
+export type RequestStatus = {
+  ref: string;
+  state: "open" | "closed" | "removed" | "expired";
+  trade: string;
+  city: string;
+  name: string;
+  description: string;
+  created_at: string;
+  expires_at: string;
+  photos: string[];
+  responses: number;
+};
+export type RequestQueueItem = ServiceRequest & {
+  expired: boolean;
+  responders: { name: string; at: string }[];
+};
+export type RequestSummary = {
+  open: number;
+  last30: number;
+  responded: number;
+  responses: number;
+  avg_minutes: number | null;
+};
 export type State = "draft" | "pending" | "published" | "suspended";
 export type Workspace = {
   id: string;
@@ -155,6 +192,33 @@ export function contacts(
       : null,
   };
 }
+export function requestContacts(
+  phone: string,
+  l: Locale,
+  artisan: string,
+  trade: string,
+  city: string,
+  ref: string,
+) {
+  const n = normalizePhone(phone);
+  if (!n) return null;
+  const text = tr(
+    l,
+    `سلام، أنا ${artisan} من معلّم. شفت الطلب ${ref} بخصوص ${trade} فـ${city}. واش ممكن نهضرو؟`,
+    `Bonjour, je suis ${artisan} de M3lem. J’ai vu la demande ${ref} pour ${trade} à ${city}. Pouvons-nous en parler ?`,
+  );
+  return {
+    tel: `tel:${n}`,
+    wa: `https://wa.me/${n.slice(1)}?text=${encodeURIComponent(text)}`,
+  };
+}
+export const requestStateName = (s: RequestStatus["state"], l: Locale) =>
+  ({
+    open: tr(l, "مفتوح", "Ouverte"),
+    closed: tr(l, "تسد", "Clôturée"),
+    removed: tr(l, "تحيد", "Retirée"),
+    expired: tr(l, "سالا", "Expirée"),
+  })[s];
 export const uuid = (s: string) =>
   /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s);
 export const stateName = (s: State, l: Locale) =>
